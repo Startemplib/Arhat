@@ -1,5 +1,3 @@
-import sys
-
 from arpy.visual import *
 
 # 使用 arpy 模块中的 vnm 函数
