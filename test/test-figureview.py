@@ -7,6 +7,7 @@ zoom_factor = 1.0
 mouse_x, mouse_y = 0, 0
 mouse_left_click = False
 window_name = "Image Viewer"
+constant_window_size = (1000, 800)  # 窗口恒定大小 (宽, 高)
 
 
 # 定义鼠标事件回调函数
@@ -16,24 +17,50 @@ def mouse_callback(event, x, y, flags, param):
         mouse_x, mouse_y = x, y
     elif event == cv2.EVENT_MOUSEWHEEL:
         if flags > 0:
-            zoom_factor += 0.3
+            zoom_factor += 0.1  # 增加缩放因子
         else:
-            zoom_factor = max(0.3, zoom_factor - 0.3)
+            zoom_factor = max(0.1, zoom_factor - 0.1)  # 限制最小缩放因子
     elif event == cv2.EVENT_LBUTTONDOWN:
         mouse_left_click = True
 
 
-# 调整图像使其保持鼠标为中心的缩放
+# 调整图像以保持鼠标为中心的缩放
 def adjust_to_mouse_center(img_cv, zoom_factor):
     global mouse_x, mouse_y
     h, w, _ = img_cv.shape
     new_w = int(w * zoom_factor)
     new_h = int(h * zoom_factor)
-    start_x = max(0, int(mouse_x * zoom_factor - w / 2))
-    start_y = max(0, int(mouse_y * zoom_factor - h / 2))
+
+    # 创建白色背景
+    background = (
+        np.ones((constant_window_size[1], constant_window_size[0], 3), dtype=np.uint8)
+        * 255
+    )
+
+    # 调整后的图像
     resized = cv2.resize(img_cv, (new_w, new_h))
-    cropped = resized[start_y : start_y + h, start_x : start_x + w]
-    return cropped
+
+    # 计算放置位置，确保图像居中
+    offset_x = max(0, (constant_window_size[0] - new_w) // 2)
+    offset_y = max(0, (constant_window_size[1] - new_h) // 2)
+
+    # 确保不超出背景边界，并进行裁剪
+    end_x = offset_x + new_w
+    end_y = offset_y + new_h
+
+    if end_x > constant_window_size[0]:
+        end_x = constant_window_size[0]
+    if end_y > constant_window_size[1]:
+        end_y = constant_window_size[1]
+
+    resized_cropped = resized[
+        0 : end_y - offset_y, 0 : end_x - offset_x
+    ]  # 裁剪调整后的图像
+
+    # 将调整后的图像放置到背景上
+    background[offset_y:end_y, offset_x:end_x] = resized_cropped
+
+    return background
 
 
 # 显示图像的函数
@@ -49,7 +76,7 @@ def display_image(image_path):
     # 设置窗口大小
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
     cv2.moveWindow(window_name, 1000, 100)  # 设置窗口初始位置
-    cv2.resizeWindow(window_name, 1000, 800)  # 初始窗口大小
+    cv2.resizeWindow(window_name, *constant_window_size)  # 初始窗口大小
 
     while True:
         adjusted_img = adjust_to_mouse_center(img, zoom_factor)
