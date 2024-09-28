@@ -1,13 +1,12 @@
 import os
 import cv2
 import numpy as np
-from tkinter import simpledialog
-import tkinter as tk
 
 # 全局变量
 zoom_factor = 1.0
 mouse_x, mouse_y = 0, 0
 mouse_left_click = False
+window_name = "Image Viewer"
 
 
 # 定义鼠标事件回调函数
@@ -17,9 +16,9 @@ def mouse_callback(event, x, y, flags, param):
         mouse_x, mouse_y = x, y
     elif event == cv2.EVENT_MOUSEWHEEL:
         if flags > 0:
-            zoom_factor += 0.1
+            zoom_factor += 0.3
         else:
-            zoom_factor = max(0.1, zoom_factor - 0.1)
+            zoom_factor = max(0.3, zoom_factor - 0.3)
     elif event == cv2.EVENT_LBUTTONDOWN:
         mouse_left_click = True
 
@@ -47,10 +46,15 @@ def display_image(image_path):
         print(f"Error loading image: {image_path}")
         return
 
+    # 设置窗口大小
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(window_name, 1000, 1000)  # 设置固定窗口大小
+    cv2.moveWindow(window_name, 1000, 100)  # 设置窗口位置
+
     while True:
         adjusted_img = adjust_to_mouse_center(img, zoom_factor)
-        cv2.imshow("Image Viewer", adjusted_img)
-        cv2.setMouseCallback("Image Viewer", mouse_callback)
+        cv2.imshow(window_name, adjusted_img)
+        cv2.setMouseCallback(window_name, mouse_callback)
 
         key = cv2.waitKey(1) & 0xFF
         if key == 13 or mouse_left_click:  # Enter key or left mouse click to close
