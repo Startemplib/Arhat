@@ -1,8 +1,0 @@
-README.md
-setup.py
-arpy/__init__.py
-arpy/visual.py
-arpy.egg-info/PKG-INFO
-arpy.egg-info/SOURCES.txt
-arpy.egg-info/dependency_links.txt
-arpy.egg-info/top_level.txt
