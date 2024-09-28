@@ -43,21 +43,26 @@ def display_image(image_path):
 
     img = cv2.imread(image_path)
     if img is None:
-        print(f"Error loading image: {image_path}")
+        print(f"加载图像错误: {image_path}")
         return
 
     # 设置窗口大小
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(window_name, 1000, 1000)  # 设置固定窗口大小
-    cv2.moveWindow(window_name, 1000, 100)  # 设置窗口位置
+    cv2.moveWindow(window_name, 1000, 100)  # 设置窗口初始位置
+    cv2.resizeWindow(window_name, 1000, 800)  # 初始窗口大小
 
     while True:
         adjusted_img = adjust_to_mouse_center(img, zoom_factor)
         cv2.imshow(window_name, adjusted_img)
+
+        # 根据调整后的图像尺寸调整窗口大小
+        h, w, _ = adjusted_img.shape
+        cv2.resizeWindow(window_name, w, h)  # 使窗口大小适应图像
+
         cv2.setMouseCallback(window_name, mouse_callback)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == 13 or mouse_left_click:  # Enter key or left mouse click to close
+        if key == 13 or mouse_left_click:  # 按下 Enter 键或左键单击关闭
             cv2.destroyAllWindows()
             break
 
