@@ -19,7 +19,7 @@ def display_images(images, window_size=(1000, 800), window_position=(1000, 100))
         elif event == cv2.EVENT_LBUTTONDOWN:
             param["mouse_left_click"] = True
 
-    # 调整图像以保持鼠标为中心的缩放
+    # 调整图像以保持鼠标为中心的缩放，允许 x, y 小于 0，填充空白
     def adjust_to_mouse_center(img_cv, zoom_factor, mouse_x, mouse_y):
         h, w, _ = img_cv.shape
         relative_mouse_x = mouse_x / constant_window_size[0]
@@ -27,28 +27,49 @@ def display_images(images, window_size=(1000, 800), window_position=(1000, 100))
         new_w = int(w * zoom_factor)
         new_h = int(h * zoom_factor)
 
+        # 创建白色背景
         background = (
             np.ones(
                 (constant_window_size[1], constant_window_size[0], 3), dtype=np.uint8
             )
             * 255
         )
+
+        # 缩放图像
         resized = cv2.resize(img_cv, (new_w, new_h))
 
-        start_x = max(0, int(relative_mouse_x * new_w - constant_window_size[0] // 2))
-        start_y = max(0, int(relative_mouse_y * new_h - constant_window_size[1] // 2))
-        end_x = min(start_x + constant_window_size[0], new_w)
-        end_y = min(start_y + constant_window_size[1], new_h)
+        # 计算图像在背景上的起始点，允许 x 和 y 小于 0
+        start_x = int(relative_mouse_x * new_w - constant_window_size[0] // 2)
+        start_y = int(relative_mouse_y * new_h - constant_window_size[1] // 2)
 
-        cropped_resized = resized[start_y:end_y, start_x:end_x]
-        background[0 : cropped_resized.shape[0], 0 : cropped_resized.shape[1]] = (
-            cropped_resized
-        )
+        # 确定裁剪区域，确保不超出图像范围
+        crop_x1 = max(0, -start_x)
+        crop_y1 = max(0, -start_y)
+        crop_x2 = min(new_w, constant_window_size[0] - start_x)
+        crop_y2 = min(new_h, constant_window_size[1] - start_y)
+
+        # 确定背景放置图像的起始点，确保不超出背景范围
+        bg_x1 = max(0, start_x)
+        bg_y1 = max(0, start_y)
+
+        # 确保裁剪后的区域尺寸不为零
+        cropped_width = crop_x2 - crop_x1
+        cropped_height = crop_y2 - crop_y1
+
+        if cropped_width > 0 and cropped_height > 0:
+            # 将裁剪后的图像部分放到背景上
+            background[
+                bg_y1 : bg_y1 + cropped_height, bg_x1 : bg_x1 + cropped_width
+            ] = resized[crop_y1:crop_y2, crop_x1:crop_x2]
 
         return background
 
     # 显示图像的函数
     def display_image(img_cv, param):
+        if img_cv is None:
+            print("图像加载失败，跳过显示。")
+            return
+
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         cv2.moveWindow(window_name, *window_position)  # 使用传入的窗口位置
         cv2.resizeWindow(window_name, *constant_window_size)
@@ -65,7 +86,7 @@ def display_images(images, window_size=(1000, 800), window_position=(1000, 100))
             cv2.setMouseCallback(window_name, mouse_callback, param)
 
             key = cv2.waitKey(1) & 0xFF
-            if key == 13 or param["mouse_left_click"]:
+            if key == 13 or param["mouse_left_click"]:  # 按下 Enter 或单击关闭
                 break
 
         cv2.destroyAllWindows()
