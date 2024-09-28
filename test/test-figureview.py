@@ -16,6 +16,7 @@ def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_MOUSEMOVE:
         mouse_x, mouse_y = x, y
     elif event == cv2.EVENT_MOUSEWHEEL:
+        # 获取滚轮事件，调整缩放因子
         if flags > 0:
             zoom_factor += 0.1  # 增加缩放因子
         else:
@@ -28,10 +29,16 @@ def mouse_callback(event, x, y, flags, param):
 def adjust_to_mouse_center(img_cv, zoom_factor):
     global mouse_x, mouse_y
     h, w, _ = img_cv.shape
+
+    # 计算鼠标在图像中的相对位置
+    relative_mouse_x = mouse_x / constant_window_size[0]
+    relative_mouse_y = mouse_y / constant_window_size[1]
+
+    # 计算新的宽度和高度
     new_w = int(w * zoom_factor)
     new_h = int(h * zoom_factor)
 
-    # 创建白色背景
+    # 计算背景
     background = (
         np.ones((constant_window_size[1], constant_window_size[0], 3), dtype=np.uint8)
         * 255
@@ -40,25 +47,21 @@ def adjust_to_mouse_center(img_cv, zoom_factor):
     # 调整后的图像
     resized = cv2.resize(img_cv, (new_w, new_h))
 
-    # 计算放置位置，确保图像居中
-    offset_x = max(0, (constant_window_size[0] - new_w) // 2)
-    offset_y = max(0, (constant_window_size[1] - new_h) // 2)
+    # 计算图像左上角的位置，使图像以鼠标为中心进行缩放
+    start_x = max(0, int(relative_mouse_x * new_w - constant_window_size[0] // 2))
+    start_y = max(0, int(relative_mouse_y * new_h - constant_window_size[1] // 2))
 
-    # 确保不超出背景边界，并进行裁剪
-    end_x = offset_x + new_w
-    end_y = offset_y + new_h
+    # 确保新坐标不超出调整后的图像大小
+    end_x = min(start_x + constant_window_size[0], new_w)
+    end_y = min(start_y + constant_window_size[1], new_h)
 
-    if end_x > constant_window_size[0]:
-        end_x = constant_window_size[0]
-    if end_y > constant_window_size[1]:
-        end_y = constant_window_size[1]
+    # 获取裁剪后的图像区域
+    cropped_resized = resized[start_y:end_y, start_x:end_x]
 
-    resized_cropped = resized[
-        0 : end_y - offset_y, 0 : end_x - offset_x
-    ]  # 裁剪调整后的图像
-
-    # 将调整后的图像放置到背景上
-    background[offset_y:end_y, offset_x:end_x] = resized_cropped
+    # 将裁剪后的图像放置在白色背景上
+    background[0 : cropped_resized.shape[0], 0 : cropped_resized.shape[1]] = (
+        cropped_resized
+    )
 
     return background
 
