@@ -17,5 +17,5 @@ image_objects = [
 ]
 
 # 显示图片
-# display_images(image_paths, window_size=(1200, 900), window_position=(500, 200))
-# vp(image_objects)
+vp(image_paths, ws=(1200, 900), wp=(500, 200))
+vp(image_objects)
