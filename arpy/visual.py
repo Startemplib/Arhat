@@ -6,6 +6,7 @@ import cv2
 from io import BytesIO
 import matplotlib.ticker as ticker
 import re
+import sympy as sp  # 用于符号矩阵
 
 # 设置 Times New Roman 为主要字体，但如果缺失字符，则回退到仿宋或其他字体
 plt.rcParams["font.family"] = [
@@ -98,7 +99,7 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         display_image(img_cv, param)
 
 
-def fti(fig, pad_inches=0.1):
+def fic(fig, pad_inches=0.3):
     """将 Matplotlib figure 转换为 OpenCV 可处理的图像，并保留边缘"""
     buf = BytesIO()
     fig.savefig(
@@ -169,7 +170,7 @@ def vnm(
     # 设置标题，可以使用 LaTeX 格式
     ax.set_title(title, fontdict={"fontsize": title_fontsize})
 
-    img_cv = fti(fig)  # 将 figure 转换为 OpenCV 格式的图像
+    img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
 
     if sd == 1:  # 检查是否要保存到桌面
