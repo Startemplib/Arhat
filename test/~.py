@@ -38,12 +38,16 @@ def vsm(
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=q)
 
-    # 设置刻度以绘制灰色网格线，确保网格线在单元之间
-    ax.set_xticks(np.arange(1, cols))
-    ax.set_yticks(np.arange(1, rows))
-    ax.grid(which="both", color="gray", linestyle="-", linewidth=1)
+    # 设置网格线，只在矩阵内部显示，不延伸到黑色边框之外
+    ax.set_xticks(np.arange(0, cols + 1), minor=False)
+    ax.set_yticks(np.arange(0, rows + 1), minor=False)
+    ax.grid(which="major", color="gray", linestyle="-", linewidth=1)
 
-    # 添加矩形黑色边框，确保不会超出边界
+    # 仅在矩阵单元格内部绘制网格线
+    ax.set_xlim(0, cols)
+    ax.set_ylim(rows, 0)
+
+    # 添加矩形黑色边框，确保它包围矩阵，不与灰色网格线冲突
     rect = plt.Rectangle((0, 0), cols, rows, fill=False, color="black", linewidth=2)
     ax.add_patch(rect)
 
@@ -67,13 +71,33 @@ def vsm(
                 fontsize=font_size,
             )
 
-    # 设置矩阵的坐标轴范围，确保黑色边框包含所有单元格
-    ax.set_xlim(0, cols)
-    ax.set_ylim(rows, 0)
-
     # 隐藏刻度标签
     ax.set_xticklabels([])
     ax.set_yticklabels([])
+
+    # 添加自动生成的行索引（行号）
+    for i in range(rows):
+        ax.text(
+            -0.5,  # 将行索引放置在左侧
+            i + 0.5,
+            str(i + 1),  # 行索引从 1 开始
+            va="center",
+            ha="right",
+            fontsize=font_size * 0.7,  # 调整字体大小
+            color="blue",  # 可以选择改变颜色
+        )
+
+    # 添加自动生成的列索引（列号）
+    for j in range(cols):
+        ax.text(
+            j + 0.5,
+            -0.5,  # 将列索引放置在顶部
+            str(j + 1),  # 列索引从 1 开始
+            va="top",
+            ha="center",
+            fontsize=font_size * 0.7,  # 调整字体大小
+            color="blue",  # 可以选择改变颜色
+        )
 
     # 显示标题，并设置适当的标题位置
     plt.title(title, fontsize=title_fontsize, pad=20)
