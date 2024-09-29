@@ -12,6 +12,7 @@ def vsm(
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
     latex=1,  # 使用LaTeX来渲染符号矩阵，默认开启
+    g=10,
 ):
     # 如果传递的是 SymPy 矩阵或者 NumPy 数组，可以直接使用 shape
     if hasattr(matrix, "shape"):
@@ -28,7 +29,8 @@ def vsm(
     # 每个格子的基准尺寸
     fig_width = cols * cs
     fig_height = rows * cs
-    title_fontsize = max(rows, cols) * 0.3 * t
+    scale = max(rows, cols)
+    title_fontsize = scale * 0.3 * t
 
     # 启用 LaTeX 渲染
     if latex == 1:
@@ -99,8 +101,10 @@ def vsm(
             color="blue",  # 可以选择改变颜色
         )
 
-    # 显示标题，并设置适当的标题位置
-    plt.title(title, fontsize=title_fontsize, pad=20)
+    # 显示标题，并设置适当的标题位置，使用 `pad` 增加标题与矩阵的间距
+    plt.title(
+        title, fontsize=title_fontsize, pad=g * scale
+    )  # pad 值增加以确保标题与列索引不重叠
 
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
