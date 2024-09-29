@@ -1,17 +1,7 @@
 from arpy.visual import *
 
-random_matrix = np.random.rand(100, 300)  # 生成100x100的随机矩阵
-vnm(
-    random_matrix,
-    cell_size=0.1,
-    r=20,
-    title="Matrix Viewer",
-    k=2,
-    t=1,
-    dpi=300,
-    cmap="viridis",
-    save_to_desktop=1,
-)
+random_matrix = np.random.rand(10, 30)  # 生成100x100的随机矩阵
+vnm(random_matrix, title="仿宋")
 
 
 # 调用函数时可指定窗口大小和位置

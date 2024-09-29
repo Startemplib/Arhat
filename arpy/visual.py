@@ -1,9 +1,17 @@
 import numpy as np  # 用于矩阵操作
 import matplotlib.pyplot as plt  # 用于绘图
+from matplotlib.font_manager import FontProperties
 import os
 import cv2
 from io import BytesIO
 import matplotlib.ticker as ticker
+import re
+
+# 设置 Times New Roman 为主要字体，但如果缺失字符，则回退到仿宋或其他字体
+plt.rcParams["font.family"] = [
+    "Times New Roman",
+    "SimSun",
+]  # 'SimHei' 是黑体, 'SimSun' 是宋体
 
 
 def get_desktop_path():
@@ -110,27 +118,27 @@ def fti(fig, pad_inches=0.1):
 
 def vnm(
     matrix,
-    cell_size=0.3,
-    r=17,
+    cs=0.1,
+    r=19,
     t=1,
-    k=1,
+    k=2.1,
     title="Matrix Viewer",
     dpi=300,
     cmap="viridis",
-    save_path=None,  # 用户可以指定保存路径
-    save_to_desktop=0,  # 增加是否保存到桌面的选项，默认为0不保存
+    path=None,  # 用户可以指定保存路径
+    sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
-    fig_width = cols * cell_size
-    fig_height = rows * cell_size
+    fig_width = cols * cs
+    fig_height = rows * cs
     title_fontsize = max(rows, cols) * 0.3 * t
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
 
     # 自动调整字体大小
-    font_size = cell_size * r  # 动态调整字体大小
+    font_size = cs * r  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             ax.text(
@@ -155,13 +163,13 @@ def vnm(
     img_cv = fti(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
 
-    if save_to_desktop == 1:  # 检查是否要保存到桌面
+    if sd == 1:  # 检查是否要保存到桌面
         desktop_path = get_desktop_path()
-        save_path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
-        plt.savefig(save_path, bbox_inches="tight")
-        print(f"图像已保存到桌面: {save_path}")
-    elif save_path:  # 如果提供了保存路径
-        plt.savefig(save_path, bbox_inches="tight")
-        print(f"图像已保存到: {save_path}")
+        path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
+        plt.savefig(path, bbox_inches="tight")
+        print(f"图像已保存到桌面: {path}")
+    elif path:  # 如果提供了保存路径
+        plt.savefig(path, bbox_inches="tight")
+        print(f"图像已保存到: {path}")
 
     plt.close(fig)  # 关闭图像，避免占用内存
