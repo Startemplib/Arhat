@@ -111,6 +111,11 @@ def fti(fig, pad_inches=0.1):
     return img_cv
 
 
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import os
+
+
 def vnm(
     matrix,
     cs=0.1,
@@ -122,12 +127,19 @@ def vnm(
     cmap="viridis",
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
+    latex=0,  # 新增参数，控制是否使用LaTeX渲染
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
     fig_width = cols * cs
     fig_height = rows * cs
     title_fontsize = max(rows, cols) * 0.3 * t
+
+    # 如果 latex 为 1，则启用 LaTeX 渲染
+    if latex == 1:
+        plt.rcParams["text.usetex"] = True
+    else:
+        plt.rcParams["text.usetex"] = False
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=q)
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
@@ -151,8 +163,10 @@ def vnm(
 
     # 添加颜色条，并设置颜色条的刻度格式
     cbar = fig.colorbar(cax)
-    cbar.ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{x:.2f}"))
+    cbar.ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
     cbar.ax.tick_params(labelsize=tick_fontsize)
+
+    # 设置标题，可以使用 LaTeX 格式
     ax.set_title(title, fontdict={"fontsize": title_fontsize})
 
     img_cv = fti(fig)  # 将 figure 转换为 OpenCV 格式的图像
