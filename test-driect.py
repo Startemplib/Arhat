@@ -1,7 +1,7 @@
 from arpy.visual import *
 
 random_matrix = np.random.rand(10, 30)  # 生成100x100的随机矩阵
-vnm(random_matrix, title="仿宋")
+vnm(random_matrix, title="仿宋", q=500, sd=1)
 
 
 # 调用函数时可指定窗口大小和位置
