@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt  # 用于绘图
 import os
 import cv2
 from io import BytesIO
+import matplotlib.ticker as ticker
 
 
 def get_desktop_path():
@@ -94,10 +95,12 @@ def vp(images, window_size=(1000, 800), window_position=(1000, 100)):
         display_image(img_cv, param)
 
 
-def fti(fig):
-    """将 Matplotlib figure 转换为 OpenCV 可处理的图像"""
+def fti(fig, pad_inches=0.1):
+    """将 Matplotlib figure 转换为 OpenCV 可处理的图像，并保留边缘"""
     buf = BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(
+        buf, format="png", bbox_inches="tight", pad_inches=pad_inches
+    )  # 使用 'bbox_inches' 和 'pad_inches'
     buf.seek(0)
     img_array = np.frombuffer(buf.getvalue(), dtype=np.uint8)
     img_cv = cv2.imdecode(img_array, 1)  # 解码为 OpenCV 格式的图像
@@ -109,8 +112,9 @@ def vnm(
     matrix,
     cell_size=0.3,
     r=17,
+    t=1,
+    k=1,
     title="Matrix Viewer",
-    title_fontsize=20,
     dpi=300,
     cmap="viridis",
     save_path=None,  # 用户可以指定保存路径
@@ -120,6 +124,7 @@ def vnm(
     # 每个格子的基准尺寸
     fig_width = cols * cell_size
     fig_height = rows * cell_size
+    title_fontsize = max(rows, cols) * 0.3 * t
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
@@ -138,11 +143,14 @@ def vnm(
                 fontsize=font_size,
             )
 
-    # 隐藏默认的主轴刻度
-    ax.tick_params(which="minor", size=0)
+    tick_fontsize = font_size * 3 * k
+    ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
 
-    fig.colorbar(cax)
-    ax.set_title(title, fontsize=title_fontsize)
+    # 添加颜色条，并设置颜色条的刻度格式
+    cbar = fig.colorbar(cax)
+    cbar.ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{x:.2f}"))
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    ax.set_title(title, fontdict={"fontsize": title_fontsize})
 
     img_cv = fti(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像

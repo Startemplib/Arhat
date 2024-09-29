@@ -1,12 +1,13 @@
 from arpy.visual import *
 
-random_matrix = np.random.rand(10, 10)  # 生成100x100的随机矩阵
+random_matrix = np.random.rand(100, 300)  # 生成100x100的随机矩阵
 vnm(
     random_matrix,
     cell_size=0.1,
     r=20,
     title="Matrix Viewer",
-    title_fontsize=20,
+    k=2,
+    t=1,
     dpi=300,
     cmap="viridis",
     save_to_desktop=1,
