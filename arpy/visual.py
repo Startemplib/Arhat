@@ -1,49 +1,12 @@
 import numpy as np  # 用于矩阵操作
 import matplotlib.pyplot as plt  # 用于绘图
-
-
-def vnm(
-    matrix,
-    cell_size=0.3,
-    r=17,
-    title="Matrix Viewer",
-    title_fontsize=20,
-    dpi=300,
-    cmap="viridis",
-):
-    rows, cols = matrix.shape
-    # 每个格子的基准尺寸
-    fig_width = cols * cell_size
-    fig_height = rows * cell_size
-
-    fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
-    cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
-
-    # 自动调整字体大小
-    font_size = cell_size * r  # 动态调整字体大小
-    for i in range(rows):
-        for j in range(cols):
-            ax.text(
-                j,
-                i,
-                f"{matrix[i, j]:.2f}",
-                ha="center",
-                va="center",
-                color="black",
-                fontsize=font_size,
-            )
-
-    # 隐藏默认的主轴刻度
-    ax.tick_params(which="minor", size=0)
-
-    fig.colorbar(cax)
-    ax.set_title(title, fontsize=title_fontsize)
-    plt.show()
-
-
 import os
 import cv2
-import numpy as np
+
+
+def get_desktop_path():
+    """获取当前用户桌面的路径"""
+    return os.path.join(os.path.expanduser("~"), "Desktop")
 
 
 def vp(images, window_size=(1000, 800), window_position=(1000, 100)):
@@ -128,3 +91,47 @@ def vp(images, window_size=(1000, 800), window_position=(1000, 100)):
 
         param["mouse_left_click"] = False  # 每次展示图片时重置点击状态
         display_image(img_cv, param)
+
+
+def vnm(
+    matrix,
+    cell_size=0.3,
+    r=17,
+    title="Matrix Viewer",
+    title_fontsize=20,
+    dpi=300,
+    cmap="viridis",
+    save_path=get_desktop_path() + "\\" + "matrix_viewer.png",  # 默认保存路径
+):
+    rows, cols = matrix.shape
+    # 每个格子的基准尺寸
+    fig_width = cols * cell_size
+    fig_height = rows * cell_size
+
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
+    cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
+
+    # 自动调整字体大小
+    font_size = cell_size * r  # 动态调整字体大小
+    for i in range(rows):
+        for j in range(cols):
+            ax.text(
+                j,
+                i,
+                f"{matrix[i, j]:.2f}",
+                ha="center",
+                va="center",
+                color="black",
+                fontsize=font_size,
+            )
+
+    # 隐藏默认的主轴刻度
+    ax.tick_params(which="minor", size=0)
+
+    fig.colorbar(cax)
+    ax.set_title(title, fontsize=title_fontsize)
+
+    # 保存图片到指定路径
+    plt.savefig(save_path, bbox_inches="tight")
+    plt.close(fig)  # 关闭图像，避免占用内存
+    vp
