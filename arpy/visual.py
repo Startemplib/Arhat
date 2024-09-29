@@ -2,9 +2,17 @@ import numpy as np  # 用于矩阵操作
 import matplotlib.pyplot as plt  # 用于绘图
 
 
-def vnm(matrix, title, cmap="viridis", title_fontsize=20, dpi=300):
+def vnm(
+    matrix,
+    cell_size=0.3,
+    r=17,
+    title="Matrix Viewer",
+    title_fontsize=20,
+    dpi=300,
+    cmap="viridis",
+):
     rows, cols = matrix.shape
-    cell_size = 0.3  # 每个格子的基准尺寸
+    # 每个格子的基准尺寸
     fig_width = cols * cell_size
     fig_height = rows * cell_size
 
@@ -12,7 +20,7 @@ def vnm(matrix, title, cmap="viridis", title_fontsize=20, dpi=300):
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
 
     # 自动调整字体大小
-    font_size = cell_size * 17  # 动态调整字体大小
+    font_size = cell_size * r  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             ax.text(
@@ -24,11 +32,6 @@ def vnm(matrix, title, cmap="viridis", title_fontsize=20, dpi=300):
                 color="black",
                 fontsize=font_size,
             )
-
-    # 添加格子的黑色边框
-    ax.set_xticks(np.arange(-0.5, cols, 1), minor=True)
-    ax.set_yticks(np.arange(-0.5, rows, 1), minor=True)
-    ax.grid(which="minor", color="black", linestyle="-", linewidth=1)
 
     # 隐藏默认的主轴刻度
     ax.tick_params(which="minor", size=0)

@@ -1,8 +1,15 @@
 from arpy.visual import *
 
-# 使用 arpy 模块中的 vnm 函数
-matrix = np.array([[1, 2], [3, 4]])  # 将列表转换为 NumPy 数组
-vnm(matrix, "Test Matrix")
+random_matrix = np.random.rand(300, 100)  # 生成100x100的随机矩阵
+vnm(
+    random_matrix,
+    cell_size=0.1,
+    r=30,
+    title="Matrix Viewer",
+    title_fontsize=20,
+    dpi=100,
+    cmap="viridis",
+)
 
 
 # 调用函数时可指定窗口大小和位置
@@ -19,4 +26,4 @@ image_objects = [
 
 # 显示图片
 # display_images(image_paths, window_size=(1200, 900), window_position=(500, 200))
-vp(image_objects)
+# vp(image_objects)
