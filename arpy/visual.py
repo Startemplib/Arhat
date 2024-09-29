@@ -43,7 +43,7 @@ import cv2
 import numpy as np
 
 
-def display_images(images, window_size=(1000, 800), window_position=(1000, 100)):
+def vp(images, window_size=(1000, 800), window_position=(1000, 100)):
     # 全局变量
     window_name = "Image Viewer"
     constant_window_size = window_size  # 窗口大小可由参数输入
@@ -53,9 +53,9 @@ def display_images(images, window_size=(1000, 800), window_position=(1000, 100))
         param["mouse_x"], param["mouse_y"] = x, y
         if event == cv2.EVENT_MOUSEWHEEL:
             if flags > 0:
-                param["zoom_factor"] += 0.1
+                param["zoom_factor"] += 0.37
             else:
-                param["zoom_factor"] = max(0.1, param["zoom_factor"] - 0.1)
+                param["zoom_factor"] = max(0.1, param["zoom_factor"] - 0.37)
         elif event == cv2.EVENT_LBUTTONDOWN:
             param["mouse_left_click"] = True
 
