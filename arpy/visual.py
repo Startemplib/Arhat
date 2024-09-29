@@ -2,6 +2,7 @@ import numpy as np  # 用于矩阵操作
 import matplotlib.pyplot as plt  # 用于绘图
 import os
 import cv2
+from io import BytesIO
 
 
 def get_desktop_path():
@@ -93,6 +94,17 @@ def vp(images, window_size=(1000, 800), window_position=(1000, 100)):
         display_image(img_cv, param)
 
 
+def fti(fig):
+    """将 Matplotlib figure 转换为 OpenCV 可处理的图像"""
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    img_array = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+    img_cv = cv2.imdecode(img_array, 1)  # 解码为 OpenCV 格式的图像
+    buf.close()
+    return img_cv
+
+
 def vnm(
     matrix,
     cell_size=0.3,
@@ -101,7 +113,8 @@ def vnm(
     title_fontsize=20,
     dpi=300,
     cmap="viridis",
-    save_path=get_desktop_path() + "\\" + "matrix_viewer.png",  # 默认保存路径
+    save_path=None,  # 用户可以指定保存路径
+    save_to_desktop=0,  # 增加是否保存到桌面的选项，默认为0不保存
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
@@ -131,7 +144,16 @@ def vnm(
     fig.colorbar(cax)
     ax.set_title(title, fontsize=title_fontsize)
 
-    # 保存图片到指定路径
-    plt.savefig(save_path, bbox_inches="tight")
+    img_cv = fti(fig)  # 将 figure 转换为 OpenCV 格式的图像
+    vp([img_cv])  # 使用 vp 函数显示图像
+
+    if save_to_desktop == 1:  # 检查是否要保存到桌面
+        desktop_path = get_desktop_path()
+        save_path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
+        plt.savefig(save_path, bbox_inches="tight")
+        print(f"图像已保存到桌面: {save_path}")
+    elif save_path:  # 如果提供了保存路径
+        plt.savefig(save_path, bbox_inches="tight")
+        print(f"图像已保存到: {save_path}")
+
     plt.close(fig)  # 关闭图像，避免占用内存
-    vp
