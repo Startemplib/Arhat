@@ -328,14 +328,24 @@ def gtdm(diagonal, lower, upper, latex=0):
 
         return matrix_latex
 
-    # 否则，生成 SymPy 矩阵
     else:
         matrix_sympy = sp.zeros(n)  # 创建 n x n 的零矩阵
 
         for i in range(n):
-            matrix_sympy[i, i] = sp.symbols(diagonal[i])  # 主对角线元素
-        for i in range(1, n):
-            matrix_sympy[i, i - 1] = sp.symbols(lower[i - 1])  # 下对角线元素
-            matrix_sympy[i - 1, i] = sp.symbols(upper[i - 1])  # 上对角线元素
+            if not isinstance(diagonal[i], sp.Basic):  # 检查是否已经是 SymPy 符号
+                matrix_sympy[i, i] = sp.symbols(diagonal[i])  # 主对角线元素
+            else:
+                matrix_sympy[i, i] = diagonal[i]
 
-        return matrix_sympy
+        for i in range(1, n):
+            if not isinstance(lower[i - 1], sp.Basic):  # 检查是否已经是 SymPy 符号
+                matrix_sympy[i, i - 1] = sp.symbols(lower[i - 1])  # 下对角线元素
+            else:
+                matrix_sympy[i, i - 1] = lower[i - 1]
+
+            if not isinstance(upper[i - 1], sp.Basic):  # 检查是否已经是 SymPy 符号
+                matrix_sympy[i - 1, i] = sp.symbols(upper[i - 1])  # 上对角线元素
+            else:
+                matrix_sympy[i - 1, i] = upper[i - 1]
+
+    return matrix_sympy
