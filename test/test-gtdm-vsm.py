@@ -1,5 +1,5 @@
 from arpy.visual import *
-
+from arpy.matrix import *
 
 # 示例：创建符号矩阵
 x, y = sp.symbols("x y")  # 定义符号
