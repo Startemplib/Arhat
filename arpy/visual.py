@@ -119,10 +119,10 @@ import os
 
 def vnm(
     matrix,
-    cs=0.1,
-    r=19,
+    cs=1,
+    r=1,
     t=1,
-    k=2.1,
+    k=1,
     title="Matrix Viewer",
     q=300,
     cmap="viridis",
@@ -132,8 +132,8 @@ def vnm(
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
-    fig_width = cols * cs
-    fig_height = rows * cs
+    fig_width = cols * cs * 0.1
+    fig_height = rows * cs * 0.1
     title_fontsize = max(rows, cols) * 0.3 * t
 
     # 如果 latex 为 1，则启用 LaTeX 渲染
@@ -146,7 +146,7 @@ def vnm(
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
 
     # 自动调整字体大小
-    font_size = cs * r  # 动态调整字体大小
+    font_size = cs * r * 19  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             ax.text(
@@ -159,7 +159,7 @@ def vnm(
                 fontsize=font_size,
             )
 
-    tick_fontsize = font_size * 3 * k
+    tick_fontsize = font_size * 6 * k
     ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
 
     # 添加颜色条，并设置颜色条的刻度格式
@@ -188,15 +188,14 @@ def vnm(
 def vsm(
     matrix,
     cs=1,
-    r=19,
-    t=30,
-    k=2.1,
+    r=1,
+    t=1,
     title="Symbol Matrix",
     q=300,
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
     latex=1,  # 使用LaTeX来渲染符号矩阵，默认开启
-    g=5,
+    g=1,
 ):
     # 如果传递的是 SymPy 矩阵或者 NumPy 数组，可以直接使用 shape
     if hasattr(matrix, "shape"):
@@ -214,7 +213,7 @@ def vsm(
     fig_width = cols * cs
     fig_height = rows * cs
     scale = max(rows, cols)
-    title_fontsize = scale * 0.3 * t
+    title_fontsize = scale * 9 * t
 
     # 启用 LaTeX 渲染
     if latex == 1:
@@ -238,7 +237,7 @@ def vsm(
     ax.add_patch(rect)
 
     # 自动调整字体大小
-    font_size = cs * r  # 动态调整字体大小
+    font_size = cs * 19 * r  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             if sympy_matrix:
@@ -287,7 +286,7 @@ def vsm(
 
     # 显示标题，并设置适当的标题位置，使用 `pad` 增加标题与矩阵的间距
     plt.title(
-        title, fontsize=title_fontsize, pad=g * scale
+        title, fontsize=title_fontsize, pad=g * 5 * scale
     )  # pad 值增加以确保标题与列索引不重叠
 
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
