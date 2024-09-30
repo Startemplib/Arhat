@@ -85,6 +85,9 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
     # 初始化鼠标和缩放相关参数
     param = {"zoom_factor": 1.0, "mouse_x": 0, "mouse_y": 0, "mouse_left_click": False}
 
+    if isinstance(images, str) or not isinstance(images, list):
+        images = [images]  # 如果是单个路径或图像，转换为单元素列表
+
     # 主逻辑
     for image in images:
         if isinstance(image, str):  # 如果输入是文件路径
@@ -173,14 +176,22 @@ def vnm(
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
 
-    if sd == 1:  # 检查是否要保存到桌面
-        desktop_path = get_desktop_path()
-        path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
-        plt.savefig(path, bbox_inches="tight")
-        print(f"图像已保存到桌面: {path}")
-    elif path:  # 如果提供了保存路径
-        plt.savefig(path, bbox_inches="tight")
-        print(f"图像已保存到: {path}")
+    try:
+        if path and sd == 1:  # 如果提供了保存路径且 sd == 1，优先使用 path 并提示信息
+            plt.savefig(path, bbox_inches="tight")
+            print(f"图像已保存到指定路径: {path}，尽管 sd == 1，优先使用了自定义路径。")
+        elif path:  # 仅提供了保存路径时，直接使用 path
+            plt.savefig(path, bbox_inches="tight")
+            print(f"图像已保存到指定路径: {path}")
+        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
+            desktop_path = get_desktop_path()
+            path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
+            plt.savefig(path, bbox_inches="tight")
+            print(f"图像已保存到桌面: {path}")
+        else:
+            print("没有提供保存路径，图像未保存。")
+    except Exception as e:
+        print(f"保存图像时发生错误: {e}")
 
     plt.close(fig)  # 关闭图像，避免占用内存
 
@@ -292,13 +303,21 @@ def vsm(
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
 
-    if sd == 1:  # 检查是否要保存到桌面
-        desktop_path = get_desktop_path()
-        path = os.path.join(desktop_path, f"Symbol_Matrix-{rows}x{cols}.png")
-        plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
-        print(f"图像已保存到桌面: {path}")
-    elif path:  # 如果提供了保存路径
-        plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
-        print(f"图像已保存到: {path}")
+    try:
+        if path and sd == 1:  # 如果提供了保存路径且 sd == 1，优先使用 path 并提示信息
+            plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
+            print(f"图像已保存到指定路径: {path}，尽管 sd == 1，优先使用了自定义路径。")
+        elif path:  # 仅提供了保存路径时，直接使用 path
+            plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
+            print(f"图像已保存到指定路径: {path}")
+        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
+            desktop_path = get_desktop_path()
+            path = os.path.join(desktop_path, f"Symbol_Matrix-{rows}x{cols}.png")
+            plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
+            print(f"图像已保存到桌面: {path}")
+        else:
+            print("没有提供保存路径，图像未保存。")
+    except Exception as e:
+        print(f"保存图像时发生错误: {e}")
 
     plt.close(fig)  # 关闭图像，避免占用内存
