@@ -1,15 +1,25 @@
-import numpy as np  # 用于矩阵操作
-import matplotlib.pyplot as plt  # 用于绘图
+################################################### 矩阵生成函数库 ###################################################
+
+import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import os
 import cv2
 from io import BytesIO
 import matplotlib.ticker as ticker
 import re
-import sympy as sp  # 用于符号矩阵
+import sympy as sp
 
 
-def gtdm(diagonal, lower, upper, latex=0):
+####### 生成三对角矩阵(generate a tridiagonal matrix) #######
+
+### upper                 (list)       上对角线元素列表，长度为 n-1
+### diagonal              (list)       主对角线元素列表，长度为 n
+### lower                 (list)       下对角线元素列表，长度为 n-1
+### latex                 (int)        是否使用 LaTeX 渲染输出（1 表示使用，0 表示否），默认值为0
+
+
+def gtdm(upper, diagonal, lower, latex=0):
     n = len(diagonal)
 
     # 检查输入长度是否合理

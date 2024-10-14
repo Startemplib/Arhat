@@ -1,23 +1,42 @@
+################################################### 可视化函数库 ###################################################
+
 import numpy as np  # 用于矩阵操作
 import matplotlib.pyplot as plt  # 用于绘图
 from matplotlib.font_manager import FontProperties
+from matplotlib.ticker import FuncFormatter
 import os
 import cv2
 from io import BytesIO
 import matplotlib.ticker as ticker
 import re
-import sympy as sp  # 用于符号矩阵
+import sympy as sp
 
-# 设置 Times New Roman 为主要字体，但如果缺失字符，则回退到仿宋或其他字体
+
+####### 字体设置(font settings) #######
+
 plt.rcParams["font.family"] = [
     "Times New Roman",
     "SimSun",
 ]  # 'SimHei' 是黑体, 'SimSun' 是宋体
 
 
+####### 桌面地址抓取(desktop address capture) #######
+
+
 def get_desktop_path():
     """获取当前用户桌面的路径"""
     return os.path.join(os.path.expanduser("~"), "Desktop")
+
+
+####### 图片观察(view photo) #######
+
+### 鼠标左键与enter键退出图片观察
+### 图片方位自动随鼠标位置移动
+### 滑轮滑动缩放
+
+### images                 (str or fig or list)     图片地址or图片文件夹地址or图片变量or图片地址组成的list变量or图片变量所组成的list变量
+### ws (window_size)       (tuple)          窗口大小，默认值为 (3000, 2300)
+### wp (window_position)   (tuple)          窗口在屏幕上的位置，默认值为 (600, 100)
 
 
 def vp(images, ws=(3000, 2300), wp=(600, 100)):
@@ -102,31 +121,47 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         display_image(img_cv, param)
 
 
-def fic(fig, pad_inches=0.3):
-    """将 Matplotlib figure 转换为 OpenCV 可处理的图像，并保留边缘"""
+####### 图片格式转换(figure image convertor) #######
+
+### fig                   (Figure)     Matplotlib 的 figure 对象
+### pi (pad_inches)        (float)      图像四周的内边距，单位为英寸，默认值为1
+
+### return:
+### img_cv                (ndarray)    OpenCV 格式的图像数组
+
+
+def fic(fig, pi=1):
     buf = BytesIO()
-    fig.savefig(
-        buf, format="png", bbox_inches="tight", pad_inches=pad_inches
-    )  # 使用 'bbox_inches' 和 'pad_inches'
+    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=pi * 0.3)
     buf.seek(0)
     img_array = np.frombuffer(buf.getvalue(), dtype=np.uint8)
-    img_cv = cv2.imdecode(img_array, 1)  # 解码为 OpenCV 格式的图像
+    img_cv = cv2.imdecode(img_array, 1)
     buf.close()
-    return img_cv
+    return img_cv  # 返回 OpenCV 格式的图像
 
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-import os
+####### 可视化数值矩阵(view numerical matrix) #######
+
+### matrix                (ndarray)    待展示的矩阵数据，n行m列的二维数组
+### cs (cell_size)        (int)        每个格子的尺寸系数，默认值为1
+### f (font_size)         (int)        字体尺寸系数，默认值为1
+### t (title_size)        (int)        标题尺寸系数，默认值为1
+### k (tick_size)         (int)        坐标刻度字体大小系数，默认值为1
+### title                 (str)        矩阵的标题，默认值为 "Numerical-Matrix"
+### q (quality)           (int)        图像质量(DPI)，默认值为300
+### cmap (colormap)       (str)        颜色映射表，默认值为 "viridis"
+### path (save_path)      (str)        可选参数，保存路径，默认值为 None
+### sd (save_desktop)     (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
+### latex (use_latex)     (int)        是否启用LaTeX渲染，1 表示启用，0 表示禁用，默认值为0
 
 
 def vnm(
     matrix,
     cs=1,
-    r=1,
+    f=1,
     t=1,
     k=1,
-    title="Matrix Viewer",
+    title="Numerical-Matrix",
     q=300,
     cmap="viridis",
     path=None,  # 用户可以指定保存路径
@@ -149,7 +184,7 @@ def vnm(
     cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
 
     # 自动调整字体大小
-    font_size = cs * r * 19  # 动态调整字体大小
+    font_size = cs * f * 19  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             ax.text(
@@ -196,17 +231,31 @@ def vnm(
     plt.close(fig)  # 关闭图像，避免占用内存
 
 
+####### 可视化符号矩阵(view Symbolic matrix) #######
+
+### matrix                (ndarray)    待展示的符号矩阵数据，n行m列的二维数组
+### cs (cell_size)        (int)        每个格子的尺寸系数，默认值为1
+### f (font_size)         (int)        字体尺寸系数，默认值为1
+### t (title_size)        (int)        标题尺寸系数，默认值为1
+### title                 (str)        符号矩阵的标题，默认值为 "Symbolic-Matrix"
+### q (quality)           (int)        图像质量(DPI)，默认值为300
+### path (save_path)      (str)        可选参数，保存路径，默认值为 None
+### sd (save_desktop)     (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
+### latex (use_latex)     (int)        使用LaTeX渲染符号矩阵，默认值为1
+### tg  (title_grid)      (int)        控制title到矩阵上边grid的留空距离，默认值为1
+
+
 def vsm(
     matrix,
     cs=1,
-    r=1,
+    f=1,
     t=1,
-    title="Symbol Matrix",
+    title="Symbolic-Matrix",
     q=300,
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
     latex=1,  # 使用LaTeX来渲染符号矩阵，默认开启
-    g=1,
+    tg=1,
 ):
     # 如果传递的是 SymPy 矩阵或者 NumPy 数组，可以直接使用 shape
     if hasattr(matrix, "shape"):
@@ -248,7 +297,7 @@ def vsm(
     ax.add_patch(rect)
 
     # 自动调整字体大小
-    font_size = cs * 19 * r  # 动态调整字体大小
+    font_size = cs * 19 * f  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
             if sympy_matrix:
@@ -297,7 +346,7 @@ def vsm(
 
     # 显示标题，并设置适当的标题位置，使用 `pad` 增加标题与矩阵的间距
     plt.title(
-        title, fontsize=title_fontsize, pad=g * 5 * scale
+        title, fontsize=title_fontsize, pad=tg * 5 * scale
     )  # pad 值增加以确保标题与列索引不重叠
 
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
