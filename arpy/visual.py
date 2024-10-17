@@ -27,6 +27,10 @@ from IPython.display import (
 )  # For displaying images in notebooks
 
 
+# Additional Libraries
+from io import BytesIO  # For handling byte streams
+import ctypes  # For calling C functions and other low-level operations
+
 ####### 字体设置(font settings) #######
 
 plt.rcParams["font.family"] = [
@@ -395,12 +399,12 @@ def vsm(
 ### xlabel            (str)       x轴的标签, 描述数据含义，支持LaTeX
 ### ylabel            (str)       y轴的标签, 描述数据含义，支持LaTeX
 ### title             (str)       图表的标题, 描述图像内容，支持LaTeX
-### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为1.0
+### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
 ### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
 
 
-def plot(x_data, y_data, xlabel, ylabel, title, z=1.0, s=(8, 4), dpi=300):
+def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
     # Switch to 'pgf' backend to render with LaTeX
     mpl.use("pgf")
 
@@ -451,3 +455,74 @@ def plot(x_data, y_data, xlabel, ylabel, title, z=1.0, s=(8, 4), dpi=300):
 
     # Close the buffer when done (optional cleanup)
     img_buffer.close()
+
+
+####### 号角Horn #######
+
+### text                       (str)
+### w(window_width)            (int)
+### h(window_height)           (int)
+### t(display_duration/ms)        (int)
+
+
+def horn(text, w=800, h=300, t=1370):
+    # Adjust figure size to fit the text size (narrow rectangle)
+    fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
+
+    # Create a plot and add the text in white with Times New Roman italic
+    plt.text(
+        0.5,
+        0.4,
+        text,
+        fontsize=12,
+        fontfamily="Times New Roman",
+        fontstyle="italic",
+        color="white",
+        ha="center",
+        va="center",
+    )
+
+    # Hide the axes
+    plt.gca().set_axis_off()
+
+    # Save the plot to a BytesIO buffer instead of displaying it
+    buf = BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+
+    # Read the image from the buffer as a numpy array
+    image = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+    # Convert RGB to BGR for OpenCV (since OpenCV uses BGR)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    # Create an OpenCV window
+    cv2.namedWindow("Plot Window", cv2.WINDOW_NORMAL)
+
+    # Get screen dimensions using ctypes
+    user32 = ctypes.windll.user32
+    screen_width = user32.GetSystemMetrics(0)
+    screen_height = user32.GetSystemMetrics(1)
+
+    # Resize the window to the custom size
+    cv2.resizeWindow("Plot Window", w, h)
+
+    # Calculate window position to center the resized window on the screen
+    window_x = (screen_width - w) // 2
+    window_y = (screen_height - h) // 2
+
+    # Position the window in the center of the screen
+    cv2.moveWindow("Plot Window", window_x, window_y)
+
+    # Display the image in the OpenCV window
+    cv2.imshow("Plot Window", image)
+
+    # Wait for the specified duration (in milliseconds)
+    cv2.waitKey(t)
+
+    # Close the OpenCV window
+    cv2.destroyAllWindows()
+
+    # Clean up Matplotlib resources
+    plt.close()

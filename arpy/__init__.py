@@ -18,31 +18,16 @@ import sympy as sp  # SymPy用于符号矩阵和代数运算
 
 
 # ---------------------- Arhat ----------------------
+from arpy.visual import *
 
-# Adjust figure size to fit the text size (narrow rectangle)
-fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
-
-# Create a plot and add the text in white with Times New Roman italic
-plt.text(
-    0.5,
-    0.4,
+horn(
     """"Breaking through the Empyrean."
     
     —— Arhat is here
     """,
-    fontsize=12,
-    fontfamily="Times New Roman",
-    fontstyle="italic",
-    color="white",
-    ha="center",
-    va="center",
+    w=800,
+    h=300,
+    t=1370,
 )
-
-# Hide the axes
-plt.gca().set_axis_off()
-
-# Show the plot with the styled text
-plt.show()
-
 
 __all__ = ["visual", "matrix"]
