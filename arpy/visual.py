@@ -465,7 +465,7 @@ def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
 ### t(display_duration/ms)        (int)
 
 
-def horn(text, w=800, h=300, t=1370):
+def Horn(text, w=800, h=300, t=1370):
     # Adjust figure size to fit the text size (narrow rectangle)
     fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
 
@@ -498,7 +498,7 @@ def horn(text, w=800, h=300, t=1370):
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
     # Create an OpenCV window
-    cv2.namedWindow("Plot Window", cv2.WINDOW_NORMAL)
+    cv2.namedWindow("Horn", cv2.WINDOW_NORMAL)
 
     # Get screen dimensions using ctypes
     user32 = ctypes.windll.user32
@@ -506,17 +506,17 @@ def horn(text, w=800, h=300, t=1370):
     screen_height = user32.GetSystemMetrics(1)
 
     # Resize the window to the custom size
-    cv2.resizeWindow("Plot Window", w, h)
+    cv2.resizeWindow("Horn", w, h)
 
     # Calculate window position to center the resized window on the screen
     window_x = (screen_width - w) // 2
     window_y = (screen_height - h) // 2
 
     # Position the window in the center of the screen
-    cv2.moveWindow("Plot Window", window_x, window_y)
+    cv2.moveWindow("Horn", window_x, window_y)
 
     # Display the image in the OpenCV window
-    cv2.imshow("Plot Window", image)
+    cv2.imshow("Horn", image)
 
     # Wait for the specified duration (in milliseconds)
     cv2.waitKey(t)

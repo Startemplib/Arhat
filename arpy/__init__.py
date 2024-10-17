@@ -20,12 +20,12 @@ import sympy as sp  # SymPy用于符号矩阵和代数运算
 # ---------------------- Arhat ----------------------
 from arpy.visual import *
 
-horn(
+Horn(
     """"Breaking through the Empyrean."
     
     —— Arhat is here
     """,
-    w=800,
+    w=700,
     h=300,
     t=1370,
 )
