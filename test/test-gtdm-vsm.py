@@ -38,7 +38,7 @@ lower = [f"v_{{n-{i}}}" for i in range(1, 5)]  # 下对角线元素
 upper = [f"\\kappa_{{n-{i}}}" for i in range(1, 5)]  # 上对角线元素
 
 # LaTeX 格式输出
-latex_matrix = gtdm(diagonal, lower, upper, latex=1)
+latex_matrix = gtdm(upper, diagonal, lower, latex=1)
 # print(latex_matrix)
 # print(type(latex_matrix))
 
@@ -50,7 +50,7 @@ lower = [y, x, y]  # 下对角线元素
 upper = [y, x, y]  # 上对角线元素
 
 # SymPy 矩阵输出
-sympy_matrix = gtdm(diagonal, lower, upper, latex=0)
+sympy_matrix = gtdm(upper, diagonal, lower, latex=0)
 print(sympy_matrix)
 print(type(sympy_matrix))
-vsm(sympy_matrix, latex=0, title="我", q=300)
+vsm(sympy_matrix, latex=0, title="我", q=300, sd=1)

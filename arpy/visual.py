@@ -1,15 +1,30 @@
 ################################################### 可视化函数库 ###################################################
 
-import numpy as np  # 用于矩阵操作
-import matplotlib.pyplot as plt  # 用于绘图
-from matplotlib.font_manager import FontProperties
-from matplotlib.ticker import FuncFormatter
-import os
-import cv2
-from io import BytesIO
-import matplotlib.ticker as ticker
-import re
-import sympy as sp
+# General Libraries
+import os  # For operating system interactions
+import re  # For regular expressions
+import io  # For input/output operations
+import numpy as np  # For matrix operations and numerical computations
+
+# Mathematical and Symbolic Libraries
+import sympy as sp  # For symbolic mathematics
+
+# Image Processing Libraries
+import cv2  # For image processing (OpenCV)
+from PIL import Image  # For handling images
+
+# Plotting Libraries
+import matplotlib as mpl  # For overall matplotlib settings
+import matplotlib.pyplot as plt  # For plotting
+from matplotlib.ticker import FuncFormatter  # For custom tick formatting
+import matplotlib.ticker as ticker  # For additional tick customization
+from matplotlib.font_manager import FontProperties  # For handling fonts
+
+# Display Libraries (IPython-specific)
+from IPython.display import (
+    display,
+    Image as IPImage,
+)  # For displaying images in notebooks
 
 
 ####### 字体设置(font settings) #######
@@ -124,15 +139,16 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
 ####### 图片格式转换(figure image convertor) #######
 
 ### fig                   (Figure)     Matplotlib 的 figure 对象
-### pi (pad_inches)        (float)      图像四周的内边距，单位为英寸，默认值为1
+### pi (pad_inches)       (float)      图像四周的内边距，单位为英寸，默认值为1
+### form (format)         (string)     转换结果类型指定
 
 ### return:
 ### img_cv                (ndarray)    OpenCV 格式的图像数组
 
 
-def fic(fig, pi=1):
+def fic(fig, form="png", pi=1):
     buf = BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", pad_inches=pi * 0.3)
+    fig.savefig(buf, format=form, bbox_inches="tight", pad_inches=pi * 0.3)
     buf.seek(0)
     img_array = np.frombuffer(buf.getvalue(), dtype=np.uint8)
     img_cv = cv2.imdecode(img_array, 1)
@@ -370,3 +386,68 @@ def vsm(
         print(f"保存图像时发生错误: {e}")
 
     plt.close(fig)  # 关闭图像，避免占用内存
+
+
+####### 绘图plot(LaTeX + matplotlib) #######
+
+### x_data            (ndarray)   x轴数据, 作为绘图输入的数值数组
+### y_data            (ndarray)   y轴数据, 作为绘图输入的数值数组
+### xlabel            (str)       x轴的标签, 描述数据含义，支持LaTeX
+### ylabel            (str)       y轴的标签, 描述数据含义，支持LaTeX
+### title             (str)       图表的标题, 描述图像内容，支持LaTeX
+### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为1.0
+### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
+### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
+
+
+def plot(x_data, y_data, xlabel, ylabel, title, z=1.0, s=(8, 4), dpi=300):
+    # Switch to 'pgf' backend to render with LaTeX
+    mpl.use("pgf")
+
+    # Set up the configuration for LaTeX and fonts
+    pgf_with_latex = {
+        "pgf.rcfonts": False,  # Do not use default matplotlib fonts, use the one specified in font.family
+        "text.usetex": True,  # Use LaTeX to write all text
+        "font.family": "serif",  # Use serif fonts
+        "font.serif": ["Times New Roman"],  # Use Times New Roman for English text
+        "pgf.preamble": r"\usepackage{xeCJK}\setCJKmainfont{KaiTi} \usepackage{amsmath}",
+    }
+
+    mpl.rcParams.update(pgf_with_latex)
+
+    # Create the plot
+    plt.figure(figsize=s)  # Set figure size
+    plt.plot(x_data, y_data)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.grid(True)
+
+    # Disable scientific notation (which causes asterisks in ticks)
+    plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
+    plt.gca().get_yaxis().get_major_formatter().set_scientific(False)
+
+    # Create an in-memory binary stream to store the image
+    img_buffer = io.BytesIO()
+
+    # Save the figure to this in-memory buffer as a PNG with DPI setting for quality control
+    plt.savefig(
+        img_buffer, format="png", dpi=dpi
+    )  # Set dpi for higher quality (300 DPI is a common high-res setting)
+
+    # Reset the buffer's position to the start
+    img_buffer.seek(0)
+
+    # Read the image to get its original dimensions
+    image = Image.open(img_buffer)
+    original_width, original_height = image.size
+
+    # Calculate the new dimensions based on the zoom factor
+    new_width = int(original_width * z)
+    new_height = int(original_height * z)
+
+    # Display the image with the resized dimensions
+    display(IPImage(data=img_buffer.getvalue(), width=new_width, height=new_height))
+
+    # Close the buffer when done (optional cleanup)
+    img_buffer.close()
