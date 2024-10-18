@@ -66,4 +66,4 @@ else:
         t=1370,
     )
 
-__all__ = ["visual", "matrix"]
+__all__ = ["visual", "matrix", "probe"]
