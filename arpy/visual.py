@@ -396,15 +396,24 @@ def vsm(
 
 ### x_data            (ndarray)   x轴数据, 作为绘图输入的数值数组
 ### y_data            (ndarray)   y轴数据, 作为绘图输入的数值数组
+### title             (str)       图表的标题, 描述图像内容，支持LaTeX
 ### xlabel            (str)       x轴的标签, 描述数据含义，支持LaTeX
 ### ylabel            (str)       y轴的标签, 描述数据含义，支持LaTeX
-### title             (str)       图表的标题, 描述图像内容，支持LaTeX
+### ts(title size)    (int)       图表标题的尺寸
+### xs(xlabel size)   (int)       x轴标签的尺寸
+### ys(ylabel size)   (int)       y轴标签的尺寸
 ### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
 ### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
 
 
-def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
+def plot(
+    x_data, y_data, xlabel, ylabel, title, z=0.3, s=(7, 5), dpi=300, ts=16, xs=11, ys=11
+):
+
+    # Store the current backend
+    original_backend = mpl.get_backend()
+
     # Switch to 'pgf' backend to render with LaTeX
     mpl.use("pgf")
 
@@ -422,14 +431,19 @@ def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
     # Create the plot
     plt.figure(figsize=s)  # Set figure size
     plt.plot(x_data, y_data)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
+
+    # Set labels and title with specified font sizes
+    plt.xlabel(xlabel, fontsize=xs)
+    plt.ylabel(ylabel, fontsize=ys)
+    plt.title(title, fontsize=ts)
+
     plt.grid(True)
 
     # Disable scientific notation (which causes asterisks in ticks)
     plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
     plt.gca().get_yaxis().get_major_formatter().set_scientific(False)
+
+    plt.tight_layout()
 
     # Create an in-memory binary stream to store the image
     img_buffer = io.BytesIO()
@@ -438,6 +452,8 @@ def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
     plt.savefig(
         img_buffer, format="png", dpi=dpi
     )  # Set dpi for higher quality (300 DPI is a common high-res setting)
+
+    plt.close("all")
 
     # Reset the buffer's position to the start
     img_buffer.seek(0)
@@ -455,6 +471,9 @@ def plot(x_data, y_data, xlabel, ylabel, title, z=0.3, s=(8, 4), dpi=300):
 
     # Close the buffer when done (optional cleanup)
     img_buffer.close()
+
+    # Restore the original backend
+    mpl.use(original_backend)
 
 
 ####### 号角Horn #######
