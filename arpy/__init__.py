@@ -27,43 +27,44 @@ def in_jupyter():
     return "ipykernel" in sys.modules
 
 
-# If in Jupyter, display using matplotlib directly
-if in_jupyter():
-    # Adjust figure size to fit the text size (narrow rectangle)
-    fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
+# # If in Jupyter, display using matplotlib directly
+# if in_jupyter():
+#     # Adjust figure size to fit the text size (narrow rectangle)
+#     fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
 
-    # Create a plot and add the text in white with Times New Roman italic
-    plt.text(
-        0.5,
-        0.4,
-        """"Breaking through the Empyrean."
+#     # Create a plot and add the text in white with Times New Roman italic
+#     plt.text(
+#         0.5,
+#         0.4,
+#         """"Breaking through the Empyrean."
 
-        —— Arhat is here
-        """,
-        fontsize=12,
-        fontfamily="Times New Roman",
-        fontstyle="italic",
-        color="white",
-        ha="center",
-        va="center",
-    )
+#         —— Arhat is here
+#         """,
+#         fontsize=12,
+#         fontfamily="Times New Roman",
+#         fontstyle="italic",
+#         color="white",
+#         ha="center",
+#         va="center",
+#     )
 
-    # Hide the axes
-    plt.gca().set_axis_off()
+#     # Hide the axes
+#     plt.gca().set_axis_off()
 
-    # Show the plot with the styled text
-    plt.show()
+#     # Show the plot with the styled text
+#     plt.show()
 
-# If not in Jupyter, use the `Horn` function
-else:
-    Horn(
-        """"Breaking through the Empyrean."
+# # If not in Jupyter, use the `Horn` function
+# else:
 
-        —— Arhat is here
-        """,
-        w=700,
-        h=300,
-        t=1370,
-    )
+Horn(
+    """"Breaking through the Empyrean."
+
+    —— Arhat is here
+    """,
+    w=700,
+    h=300,
+    t=1370,
+)
 
 __all__ = ["visual", "matrix", "probe"]
