@@ -533,6 +533,7 @@ def Horn(text, w=800, h=300, t=1370):
 
     # Position the window in the center of the screen
     cv2.moveWindow("Horn", window_x, window_y)
+    cv2.setWindowProperty("Horn", cv2.WND_PROP_TOPMOST, 1)
 
     # Display the image in the OpenCV window
     cv2.imshow("Horn", image)
