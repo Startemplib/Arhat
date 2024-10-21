@@ -170,6 +170,7 @@ def fic(fig, form="png", pi=1):
 ### cbs (font_size of color bar)          int)        彩色颜色条刻度字体大小系数，默认值为1
 ### title                                (str)        矩阵的标题，默认值为 "Numerical-Matrix"
 ### q (quality)                          (int)        图像质量(DPI)，默认值为300
+### p (title_pad)                        (int)        标题与矩阵之间的间隔
 ### cmap (colormap)                      (str)        颜色映射表，默认值为 "viridis"
 ### path (save_path)                     (str)        可选参数，保存路径，默认值为 None
 ### sd (save_desktop)                    (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
@@ -186,6 +187,7 @@ def vnm(
     k=1,
     title="Numerical-Matrix",
     q=300,
+    p=0,
     cmap="viridis",
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
@@ -253,7 +255,7 @@ def vnm(
     cbar.ax.tick_params(labelsize=cbs * tick_fontsize)
 
     # 设置标题，可以使用 LaTeX 格式
-    ax.set_title(title, fontdict={"fontsize": title_fontsize})
+    ax.set_title(title, fontdict={"fontsize": title_fontsize}, pad=p)
 
     img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
     vp([img_cv])  # 使用 vp 函数显示图像
