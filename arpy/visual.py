@@ -196,7 +196,9 @@ def vnm(
     syt=1,
     cbs=1,
 ):
+
     rows, cols = matrix.shape
+
     # 每个格子的基准尺寸
     fig_width = cols * cs * 0.1
     fig_height = rows * cs * 0.1
@@ -219,26 +221,37 @@ def vnm(
         for j in range(cols):
             real_part = matrix[i, j].real
             imag_part = matrix[i, j].imag
-            if imag_part >= 0:
+            if real_part == 0 and imag_part == 0:
                 ax.text(
                     j,
                     i,
-                    f"{real_part:.2f}+{imag_part:.2f}i",
+                    "0",
                     ha="center",
                     va="center",
-                    color="black",
+                    color="white",
                     fontsize=font_size,
                 )
             else:
-                ax.text(
-                    j,
-                    i,
-                    f"{real_part:.2f}{imag_part:.2f}i",  # Handle negative imaginary part
-                    ha="center",
-                    va="center",
-                    color="black",
-                    fontsize=font_size,
-                )
+                if imag_part >= 0:
+                    ax.text(
+                        j,
+                        i,
+                        f"{real_part:.2f}+{imag_part:.2f}i",
+                        ha="center",
+                        va="center",
+                        color="black",
+                        fontsize=font_size,
+                    )
+                else:
+                    ax.text(
+                        j,
+                        i,
+                        f"{real_part:.2f}{imag_part:.2f}i",  # Handle negative imaginary part
+                        ha="center",
+                        va="center",
+                        color="black",
+                        fontsize=font_size,
+                    )
 
     tick_fontsize = font_size * 6 * k
     ax.set_xticks(
