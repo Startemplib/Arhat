@@ -245,6 +245,7 @@ def vnm(
     ax.set_yticks(
         np.arange(0, rows, step=syt)
     )  # Control the tick positions on the y-axis
+    ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
 
     # 添加颜色条，并设置颜色条的刻度格式
     cbar = fig.colorbar(cax)
