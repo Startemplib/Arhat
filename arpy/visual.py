@@ -162,17 +162,19 @@ def fic(fig, form="png", pi=1):
 
 ####### 可视化数值矩阵(view numerical matrix) #######
 
-### matrix                (ndarray)    待展示的矩阵数据，n行m列的二维数组
-### cs (cell_size)        (int)        每个格子的尺寸系数，默认值为1
-### f (font_size)         (int)        字体尺寸系数，默认值为1
-### t (title_size)        (int)        标题尺寸系数，默认值为1
-### k (tick_size)         (int)        坐标刻度字体大小系数，默认值为1
-### title                 (str)        矩阵的标题，默认值为 "Numerical-Matrix"
-### q (quality)           (int)        图像质量(DPI)，默认值为300
-### cmap (colormap)       (str)        颜色映射表，默认值为 "viridis"
-### path (save_path)      (str)        可选参数，保存路径，默认值为 None
-### sd (save_desktop)     (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
-### latex (use_latex)     (int)        是否启用LaTeX渲染，1 表示启用，0 表示禁用，默认值为0
+### matrix                               (ndarray)    待展示的矩阵数据，n行m列的二维数组
+### cs (cell_size)                       (int)        每个格子的尺寸系数，默认值为1
+### f (font_size)                        (int)        字体尺寸系数，默认值为1
+### t (title_size)                       (int)        标题尺寸系数，默认值为1
+### k (tick_size)                        (int)        坐标刻度字体大小系数，默认值为1
+### title                                (str)        矩阵的标题，默认值为 "Numerical-Matrix"
+### q (quality)                          (int)        图像质量(DPI)，默认值为300
+### cmap (colormap)                      (str)        颜色映射表，默认值为 "viridis"
+### path (save_path)                     (str)        可选参数，保存路径，默认值为 None
+### sd (save_desktop)                    (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
+### latex (use_latex)                    (int)        是否启用LaTeX渲染，1 表示启用，0 表示禁用，默认值为0
+### sxt(spacing of the x-axis ticks)     (int)        x轴刻度间距
+### yxt(spacing of the y-axis ticks)     (int)        y轴刻度间距
 
 
 def vnm(
@@ -187,6 +189,8 @@ def vnm(
     path=None,  # 用户可以指定保存路径
     sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
     latex=0,  # 新增参数，控制是否使用LaTeX渲染
+    sxt=1,
+    syt=1,
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
@@ -201,24 +205,44 @@ def vnm(
         plt.rcParams["text.usetex"] = False
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=q)
-    cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
+
+    abs_matrix = np.abs(matrix)  # Get the magnitude of the complex matrix
+    cax = ax.imshow(abs_matrix, cmap=cmap, interpolation="nearest")
 
     # 自动调整字体大小
     font_size = cs * f * 19  # 动态调整字体大小
     for i in range(rows):
         for j in range(cols):
-            ax.text(
-                j,
-                i,
-                f"{matrix[i, j]:.2f}",
-                ha="center",
-                va="center",
-                color="black",
-                fontsize=font_size,
-            )
+            real_part = matrix[i, j].real
+            imag_part = matrix[i, j].imag
+            if imag_part >= 0:
+                ax.text(
+                    j,
+                    i,
+                    f"{real_part:.2f}+{imag_part:.2f}i",
+                    ha="center",
+                    va="center",
+                    color="black",
+                    fontsize=font_size,
+                )
+            else:
+                ax.text(
+                    j,
+                    i,
+                    f"{real_part:.2f}{imag_part:.2f}i",  # Handle negative imaginary part
+                    ha="center",
+                    va="center",
+                    color="black",
+                    fontsize=font_size,
+                )
 
     tick_fontsize = font_size * 6 * k
-    ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
+    ax.set_xticks(
+        np.arange(0, cols, step=sxt)
+    )  # Control the tick positions on the x-axis
+    ax.set_yticks(
+        np.arange(0, rows, step=syt)
+    )  # Control the tick positions on the y-axis
 
     # 添加颜色条，并设置颜色条的刻度格式
     cbar = fig.colorbar(cax)
