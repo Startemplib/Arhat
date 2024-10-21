@@ -167,6 +167,7 @@ def fic(fig, form="png", pi=1):
 ### f (font_size)                        (int)        字体尺寸系数，默认值为1
 ### t (title_size)                       (int)        标题尺寸系数，默认值为1
 ### k (tick_size)                        (int)        坐标刻度字体大小系数，默认值为1
+### cbs (font_size of color bar)          int)        彩色颜色条刻度字体大小系数，默认值为1
 ### title                                (str)        矩阵的标题，默认值为 "Numerical-Matrix"
 ### q (quality)                          (int)        图像质量(DPI)，默认值为300
 ### cmap (colormap)                      (str)        颜色映射表，默认值为 "viridis"
@@ -191,6 +192,7 @@ def vnm(
     latex=0,  # 新增参数，控制是否使用LaTeX渲染
     sxt=1,
     syt=1,
+    cbs=1,
 ):
     rows, cols = matrix.shape
     # 每个格子的基准尺寸
@@ -247,7 +249,7 @@ def vnm(
     # 添加颜色条，并设置颜色条的刻度格式
     cbar = fig.colorbar(cax)
     cbar.ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
-    cbar.ax.tick_params(labelsize=tick_fontsize)
+    cbar.ax.tick_params(labelsize=cbs * tick_fontsize)
 
     # 设置标题，可以使用 LaTeX 格式
     ax.set_title(title, fontdict={"fontsize": title_fontsize})
