@@ -448,6 +448,9 @@ def vsm(
 ### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
 ### plot_args         (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
+### log_x             (bool)      是否设置 x 轴为对数坐标, 默认值为 False
+### log_y             (bool)      是否设置 y 轴为对数坐标, 默认值为 False
+### plot_type         (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
 
 
 def plot(
@@ -462,7 +465,10 @@ def plot(
     ts=16,
     xs=11,
     ys=11,
-    plot_args=Non,
+    plot_args=None,
+    log_x=False,
+    log_y=False,
+    plot_type="plot",
 ):
 
     # Store the current backend
@@ -487,8 +493,18 @@ def plot(
     # Apply plot_args for flexibility
     if plot_args is None:
         plot_args = {}  # Default to an empty dictionary if no arguments provided
-    plt.plot(x_data, y_data, **plot_args)
-    plt.plot(x_data, y_data)
+    # 根据 plot_type 参数选择绘图方法
+    if plot_type == "scatter":
+        plt.scatter(x_data, y_data, **plot_args)
+    else:  # 默认为线图
+        plt.plot(x_data, y_data, **plot_args)
+
+    # Set log scale for y-axis if needed
+    if log_y:
+        plt.yscale("log")
+
+    if log_x:
+        plt.xscale("log")
 
     # Set labels and title with specified font sizes
     plt.xlabel(xlabel, fontsize=xs)
@@ -497,9 +513,17 @@ def plot(
 
     plt.grid(True)
 
-    # Disable scientific notation (which causes asterisks in ticks)
-    plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
-    plt.gca().get_yaxis().get_major_formatter().set_scientific(False)
+    # 禁用科学计数法
+    (
+        plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
+        if not log_y
+        else None
+    )
+    (
+        plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
+        if not log_x
+        else None
+    )
 
     plt.tight_layout()
 
