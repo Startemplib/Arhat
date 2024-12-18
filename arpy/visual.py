@@ -447,10 +447,22 @@ def vsm(
 ### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
 ### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
+### plot_args         (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
 
 
 def plot(
-    x_data, y_data, xlabel, ylabel, title, z=0.3, s=(7, 5), dpi=300, ts=16, xs=11, ys=11
+    x_data,
+    y_data,
+    xlabel,
+    ylabel,
+    title,
+    z=0.3,
+    s=(7, 5),
+    dpi=300,
+    ts=16,
+    xs=11,
+    ys=11,
+    plot_args=Non,
 ):
 
     # Store the current backend
@@ -472,6 +484,10 @@ def plot(
 
     # Create the plot
     plt.figure(figsize=s)  # Set figure size
+    # Apply plot_args for flexibility
+    if plot_args is None:
+        plot_args = {}  # Default to an empty dictionary if no arguments provided
+    plt.plot(x_data, y_data, **plot_args)
     plt.plot(x_data, y_data)
 
     # Set labels and title with specified font sizes
@@ -521,21 +537,23 @@ def plot(
 ####### 号角Horn #######
 
 ### text                       (str)
+### dpi                        (int)
+### fz(fontsize)               (int)
 ### w(window_width)            (int)
 ### h(window_height)           (int)
-### t(display_duration/ms)        (int)
+### t(display_duration/ms)     (int)
 
 
-def Horn(text, w=800, h=300, t=1370):
+def Horn(text, fz=12, dpi=1000, w=800, h=300, t=1370):
     # Adjust figure size to fit the text size (narrow rectangle)
-    fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black")
+    fig = plt.figure(figsize=(4.53, 1.3137), facecolor="black", dpi=dpi)
 
     # Create a plot and add the text in white with Times New Roman italic
     plt.text(
         0.5,
         0.4,
         text,
-        fontsize=12,
+        fontsize=fz,
         fontfamily="Times New Roman",
         fontstyle="italic",
         color="white",
