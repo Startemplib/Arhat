@@ -68,9 +68,9 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         param["mouse_x"], param["mouse_y"] = x, y
         if event == cv2.EVENT_MOUSEWHEEL:
             if flags > 0:
-                param["zoom_factor"] += 0.37
+                param["zoom_factor"] += 0.17
             else:
-                param["zoom_factor"] = max(0.1, param["zoom_factor"] - 0.37)
+                param["zoom_factor"] = max(0.1, param["zoom_factor"] - 0.17)
         elif event == cv2.EVENT_LBUTTONDOWN:
             param["mouse_left_click"] = True
 
@@ -121,7 +121,7 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         cv2.destroyAllWindows()
 
     # 初始化鼠标和缩放相关参数
-    param = {"zoom_factor": 1.0, "mouse_x": 0, "mouse_y": 0, "mouse_left_click": False}
+    param = {"zoom_factor": 1, "mouse_x": 0, "mouse_y": 0, "mouse_left_click": False}
 
     if isinstance(images, str) or not isinstance(images, list):
         images = [images]  # 如果是单个路径或图像，转换为单元素列表
@@ -129,7 +129,7 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
     # 主逻辑
     for image in images:
         if isinstance(image, str):  # 如果输入是文件路径
-            img_cv = cv2.imread(image)
+            img_cv = cv2.imread(image, cv2.IMREAD_UNCHANGED)
             if img_cv is None:
                 print(f"加载图像错误: {image}")
                 continue
@@ -436,21 +436,24 @@ def vsm(
 
 ####### 绘图plot(LaTeX + matplotlib) #######
 
-### x_data            (ndarray)   x轴数据, 作为绘图输入的数值数组
-### y_data            (ndarray)   y轴数据, 作为绘图输入的数值数组
-### title             (str)       图表的标题, 描述图像内容，支持LaTeX
-### xlabel            (str)       x轴的标签, 描述数据含义，支持LaTeX
-### ylabel            (str)       y轴的标签, 描述数据含义，支持LaTeX
-### ts(title size)    (int)       图表标题的尺寸
-### xs(xlabel size)   (int)       x轴标签的尺寸
-### ys(ylabel size)   (int)       y轴标签的尺寸
-### z (zoom factor)   (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
-### s (figure size)   (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
-### dpi (quality)     (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
-### plot_args         (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
-### log_x             (bool)      是否设置 x 轴为对数坐标, 默认值为 False
-### log_y             (bool)      是否设置 y 轴为对数坐标, 默认值为 False
-### plot_type         (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
+### x_data                   (ndarray)   x轴数据, 作为绘图输入的数值数组
+### y_data                   (ndarray)   y轴数据, 作为绘图输入的数值数组
+### title                    (str)       图表的标题, 描述图像内容，支持LaTeX
+### xlabel                   (str)       x轴的标签, 描述数据含义，支持LaTeX
+### ylabel                   (str)       y轴的标签, 描述数据含义，支持LaTeX
+### ts (title size)          (int)       图表标题的尺寸
+### xs (xlabel size)         (int)       x轴标签的尺寸
+### ys (ylabel size)         (int)       y轴标签的尺寸
+### z  (zoom factor)         (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
+### s  (figure size)         (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
+### dpi (quality)            (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
+### plot_args                (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
+### log_x                    (bool)      是否设置 x 轴为对数坐标, 默认值为 False
+### log_y                    (bool)      是否设置 y 轴为对数坐标, 默认值为 False
+### plot_type                (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
+### show                     (bool)      是否弹窗显示图片
+### ws (window size)         (tuple)     窗口大小，默认值为 (800, 500)
+### wp (window position)     (tuple)     窗口在屏幕上的位置，默认值为 (600, 100)
 
 
 def plot(
@@ -469,6 +472,9 @@ def plot(
     log_x=False,
     log_y=False,
     plot_type="plot",
+    show=False,
+    ws=(800, 500),
+    wp=(600, 100),
 ):
 
     # Store the current backend
@@ -550,6 +556,9 @@ def plot(
 
     # Display the image with the resized dimensions
     display(IPImage(data=img_buffer.getvalue(), width=new_width, height=new_height))
+
+    if show:
+        vp(image, ws, wp)
 
     # Close the buffer when done (optional cleanup)
     img_buffer.close()
