@@ -136,6 +136,17 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         else:  # 如果输入是已经加载的图像
             img_cv = image
 
+        if isinstance(img_cv, Image.Image):  # 如果是 Pillow 图像
+            img_cv = np.array(img_cv)
+            img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
+        if img_cv.shape[2] == 4:  # 如果是 RGBA 格式
+            img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)  # 转换为 RGB 格式
+
+        img_height, img_width = img_cv.shape[:2]
+        zoom_factor = min(ws[0] / img_width, ws[1] / img_height)
+
+        param["zoom_factor"] = zoom_factor
+
         param["mouse_left_click"] = False  # 每次展示图片时重置点击状态
         display_image(img_cv, param)
 
