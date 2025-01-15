@@ -462,9 +462,10 @@ def vsm(
 ### log_x                    (bool)      是否设置 x 轴为对数坐标, 默认值为 False
 ### log_y                    (bool)      是否设置 y 轴为对数坐标, 默认值为 False
 ### plot_type                (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
-### show                     (bool)      是否弹窗显示图片
+### show                     (bool)      是否弹窗显示图片，默认否
 ### ws (window size)         (tuple)     窗口大小，默认值为 (800, 500)
 ### wp (window position)     (tuple)     窗口在屏幕上的位置，默认值为 (600, 100)
+### multi                    (bool)      是否是多数据模式，默认否。
 
 
 def plot(
@@ -479,6 +480,7 @@ def plot(
     ts=16,
     xs=11,
     ys=11,
+    multi=False,
     plot_args=None,
     log_x=False,
     log_y=False,
@@ -505,16 +507,30 @@ def plot(
 
     mpl.rcParams.update(pgf_with_latex)
 
-    # Create the plot
-    plt.figure(figsize=s)  # Set figure size
-    # Apply plot_args for flexibility
-    if plot_args is None:
-        plot_args = {}  # Default to an empty dictionary if no arguments provided
-    # 根据 plot_type 参数选择绘图方法
-    if plot_type == "scatter":
-        plt.scatter(x_data, y_data, **plot_args)
-    else:  # 默认为线图
-        plt.plot(x_data, y_data, **plot_args)
+    if not multi:  # 单数据模式
+
+        # Create the plot
+        plt.figure(figsize=s)  # Set figure size
+        # Apply plot_args for flexibility
+        if plot_args is None:
+            plot_args = {}  # Default to an empty dictionary if no arguments provided
+        # 根据 plot_type 参数选择绘图方法
+        if plot_type == "scatter":
+            plt.scatter(x_data, y_data, **plot_args)
+        else:  # 默认为线图
+            plt.plot(x_data, y_data, **plot_args)
+    else:  # 多数据模式
+        if not isinstance(x_data, list) or not isinstance(y_data, list):
+            raise ValueError(
+                "In multi mode, x_data and y_data must be lists of arrays."
+            )
+        if plot_args is None:
+            plot_args = [{}] * len(x_data)  # 默认样式参数列表
+        for x, y, args in zip(x_data, y_data, plot_args):
+            if plot_type == "scatter":
+                plt.scatter(x, y, **args)
+            else:
+                plt.plot(x, y, **args)
 
     # Set log scale for y-axis if needed
     if log_y:
@@ -529,6 +545,16 @@ def plot(
     plt.title(title, fontsize=ts)
 
     plt.grid(True)
+
+    if multi:  # 多数据模式
+        # 检查每组数据的 plot_args 是否包含 label
+        has_label = any("label" in str(args).lower() for args in plot_args)
+    else:  # 单数据模式
+        # 检查单组数据的 plot_args 是否包含 label
+        has_label = "label" in str(plot_args).lower()
+
+    if has_label:
+        plt.legend()  # 显示图例
 
     # 禁用科学计数法
     (
