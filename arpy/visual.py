@@ -445,6 +445,26 @@ def vsm(
     plt.close(fig)  # 关闭图像，避免占用内存
 
 
+####### LaTeX to txt #######
+
+### latex              (str)       LaTeX 格式的文本, 需要转换为txt格式
+
+import re
+from pylatexenc.latex2text import LatexNodes2Text
+
+
+def latexTtxt(latex):
+
+    # 使用 pylatexenc 解析 LaTeX 文本
+    sanitized = LatexNodes2Text().latex_to_text(latex)
+
+    # 进一步清理文件系统非法字符
+    sanitized = re.sub(r'[\\^&%$#@!*:<>?|"/]', "", sanitized)  # 移除文件系统非法字符
+    sanitized = sanitized.replace(" ", "_")  # 替换空格为下划线
+
+    return sanitized
+
+
 ####### 绘图plot(LaTeX + matplotlib) #######
 
 ### x_data                   (ndarray)   x轴数据, 作为绘图输入的数值数组
@@ -459,13 +479,15 @@ def vsm(
 ### s  (figure size)         (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)            (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
 ### plot_args                (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
-### log_x                    (bool)      是否设置 x 轴为对数坐标, 默认值为 False
-### log_y                    (bool)      是否设置 y 轴为对数坐标, 默认值为 False
+### log_x                    (int)      是否设置 x 轴为对数坐标, 默认值为 False
+### log_y                    (int)      是否设置 y 轴为对数坐标, 默认值为 False
 ### plot_type                (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
-### show                     (bool)      是否弹窗显示图片，默认否
+### show                     (int)      是否弹窗显示图片，默认否
 ### ws (window size)         (tuple)     窗口大小，默认值为 (800, 500)
 ### wp (window position)     (tuple)     窗口在屏幕上的位置，默认值为 (600, 100)
-### multi                    (bool)      是否是多数据模式，默认否。
+### multi                    (int)      是否是多数据模式，默认否。
+### path (save_path)      (str)        可选参数，保存路径，默认值为 None
+### sd (save_desktop)     (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
 
 
 def plot(
@@ -480,14 +502,16 @@ def plot(
     ts=16,
     xs=11,
     ys=11,
-    multi=False,
+    multi=0,
     plot_args=None,
-    log_x=False,
-    log_y=False,
+    log_x=0,
+    log_y=0,
     plot_type="plot",
-    show=False,
+    show=0,
     ws=(800, 500),
     wp=(600, 100),
+    path=None,
+    sd=0,
 ):
 
     # Store the current backend
@@ -533,10 +557,10 @@ def plot(
                 plt.plot(x, y, **args)
 
     # Set log scale for y-axis if needed
-    if log_y:
+    if log_y == 1:
         plt.yscale("log")
 
-    if log_x:
+    if log_x == 1:
         plt.xscale("log")
 
     # Set labels and title with specified font sizes
@@ -546,7 +570,7 @@ def plot(
 
     plt.grid(True)
 
-    if multi:  # 多数据模式
+    if multi == 1:  # 多数据模式
         # 检查每组数据的 plot_args 是否包含 label
         has_label = any("label" in str(args).lower() for args in plot_args)
     else:  # 单数据模式
@@ -594,8 +618,28 @@ def plot(
     # Display the image with the resized dimensions
     display(IPImage(data=img_buffer.getvalue(), width=new_width, height=new_height))
 
-    if show:
+    if show == 1:
         vp(image, ws, wp)
+
+    try:
+        if path and sd == 1:  # 如果提供了保存路径且 sd == 1，优先使用 path 并提示信息
+            with open(path, "wb") as f:
+                f.write(img_buffer.getvalue())
+            print(f"图像已保存到指定路径: {path}，尽管 sd == 1，优先使用了自定义路径。")
+        elif path:  # 仅提供了保存路径时，直接使用 path
+            with open(path, "wb") as f:
+                f.write(img_buffer.getvalue())
+            print(f"图像已保存到指定路径: {path}")
+        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
+            desktop_path = get_desktop_path()
+            path = os.path.join(desktop_path, f"{latexTtxt(title)}.png")
+            with open(path, "wb") as f:
+                f.write(img_buffer.getvalue())
+            print(f"图像已保存到桌面: {path}")
+        else:
+            print("没有提供保存路径，图像未保存。")
+    except Exception as e:
+        print(f"保存图像时发生错误: {e}")
 
     # Close the buffer when done (optional cleanup)
     img_buffer.close()
