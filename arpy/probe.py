@@ -5,8 +5,10 @@ import sympy as sp
 
 
 ### *variables       (Everything???)   Accepts any number of positional arguments(variables you want to see)
-# Test the type and dimensions (depth and elements per level) of variables
-def gl(*variables):
+###
+
+
+def gl(*variables, sa=1):
     frame = inspect.currentframe().f_back
     variable_names = {
         id(v): name for name, v in frame.f_locals.items() if id(v) in map(id, variables)
@@ -104,5 +106,5 @@ def gl(*variables):
 
         else:
             print(f"  Shape:                                                   lemeow~")
-
-        print(f"  Value:                                                   {var}\n")
+        if sa:
+            print(f"  Value:                                                   {var}\n")
