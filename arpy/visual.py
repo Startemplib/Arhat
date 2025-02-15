@@ -479,15 +479,15 @@ def latexTtxt(latex):
 ### s  (figure size)         (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
 ### dpi (quality)            (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
 ### plot_args                (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
-### log_x                    (int)      是否设置 x 轴为对数坐标, 默认值为 False
-### log_y                    (int)      是否设置 y 轴为对数坐标, 默认值为 False
+### log_x                    (int)       是否设置 x 轴为对数坐标, 默认值为 False
+### log_y                    (int)       是否设置 y 轴为对数坐标, 默认值为 False
 ### plot_type                (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
-### show                     (int)      是否弹窗显示图片，默认否
+### show                     (int)       是否弹窗显示图片，默认否
 ### ws (window size)         (tuple)     窗口大小，默认值为 (800, 500)
 ### wp (window position)     (tuple)     窗口在屏幕上的位置，默认值为 (600, 100)
-### multi                    (int)      是否是多数据模式，默认否。
-### path (save_path)      (str)        可选参数，保存路径，默认值为 None
-### sd (save_desktop)     (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
+### multi                    (int)       是否是多数据模式，默认否。
+### path (save_path)         (str)       可选参数，保存路径，默认值为 None
+### sd (save_desktop)        (int)       是否保存到桌面（1 表示是，0 表示否），默认值为0
 
 
 def plot(

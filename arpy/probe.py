@@ -5,10 +5,10 @@ import sympy as sp
 
 
 ### *variables       (Everything???)   Accepts any number of positional arguments(variables you want to see)
-###
+### sa(see all)      bool              whether see all element
 
 
-def gl(*variables, sa=1):
+def gl(*variables, sa=True):
     frame = inspect.currentframe().f_back
     variable_names = {
         id(v): name for name, v in frame.f_locals.items() if id(v) in map(id, variables)
