@@ -1,8 +1,8 @@
+import os
 import inspect
 import sympy as sp
 
 ####### gla(glance) #######
-
 
 ### *variables       (Everything???)   Accepts any number of positional arguments(variables you want to see)
 ### sa(see all)      bool              whether see all element
@@ -108,3 +108,81 @@ def gl(*variables, sa=True):
             print(f"  Shape:                                                   lemeow~")
         if sa:
             print(f"  Value:                                                   {var}\n")
+
+
+####### vfs(view file system) #######
+
+
+### path             str               The path of the part you wanna know the structure
+### pr               str               The prefix used for indentation (used internally during recursion)
+### f                str | list[str]   Filter keyword(s) to apply on file/folder names
+### m                str               Mode of filtering: "kp" to *keep* matching entries, "ig" to *ignore* them
+
+
+def vfs(path, pr="", f=None, m="ig"):
+    """Print a tree structure from the given path, showing full path only at the root.
+    Folders are suffixed with '/' for clarity.
+    Filtering supports 'kp' or 'ig' logic.
+    """
+
+    def matches(name):
+        if not f:
+            return True
+        filters = [f] if isinstance(f, str) else f
+        return any(f in name for f in filters)
+
+    def should_include(name):
+        if f is None:
+            return True
+        return matches(name) if m == "kp" else not matches(name)
+
+    def dir_has_match(p):
+        """Check if dir itself or any child matches filter."""
+        try:
+            for root, dirs, files in os.walk(p):
+                rel = os.path.relpath(root, p)
+                if rel == "." and should_include(os.path.basename(p)):
+                    return True
+                for name in dirs + files:
+                    if should_include(name):
+                        return True
+        except:
+            pass
+        return False
+
+    if not os.path.exists(path):
+        print(f"{pr}[!] Path does not exist: {path}")
+        return
+
+    if not pr:
+        print(os.path.abspath(path))  # Print root once
+
+    try:
+        raw_entries = sorted(os.listdir(path))
+    except PermissionError:
+        print(pr + "[!] Permission denied")
+        return
+
+    # Apply filtering
+    entries = []
+    for entry in raw_entries:
+        full_path = os.path.join(path, entry)
+        if os.path.isdir(full_path):
+            if should_include(entry) or dir_has_match(full_path):
+                entries.append(entry)
+        elif should_include(entry):
+            entries.append(entry)
+
+    entries_count = len(entries)
+
+    for index, entry in enumerate(entries):
+        full_path = os.path.join(path, entry)
+        is_dir = os.path.isdir(full_path)
+        is_last = index == entries_count - 1
+        connector = "└── " if is_last else "├── "
+        name = entry + "/" if is_dir else entry
+        print(pr + connector + name)
+
+        if is_dir:
+            extension = "    " if is_last else "│   "
+            vfs(full_path, pr + extension, f, m)
