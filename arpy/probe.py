@@ -1,6 +1,9 @@
 import os
 import inspect
 import sympy as sp
+from colorama import init, Fore, Style
+
+init(autoreset=True)
 
 ####### gla(glance) #######
 
@@ -117,13 +120,18 @@ def gl(*variables, sa=True):
 ### pr               str               The prefix used for indentation (used internally during recursion)
 ### f                str | list[str]   Filter keyword(s) to apply on file/folder names
 ### m                str               Mode of filtering: "kp" to *keep* matching entries, "ig" to *ignore* them
+### depth            int | None        Max recursion depth (None means unlimited)
 
 
-def vfs(path, pr="", f=None, m="ig"):
+def vfs(path, pr="", f=None, m="ig", depth=None):
     """Print a tree structure from the given path, showing full path only at the root.
     Folders are suffixed with '/' for clarity.
     Filtering supports 'kp' or 'ig' logic.
     """
+
+    if depth is not None and depth <= 0:
+        print(Fore.RED + f"{pr}[!] Invalid depth value: {depth} — must be > 0 or None")
+        return
 
     def matches(name):
         if not f:
@@ -136,12 +144,16 @@ def vfs(path, pr="", f=None, m="ig"):
             return True
         return matches(name) if m == "kp" else not matches(name)
 
-    def dir_has_match(p):
-        """Check if dir itself or any child matches filter."""
+    def dir_has_match(p, remaining_depth):
+        """Check if dir or any child matches filter within depth."""
+        if remaining_depth == 0:
+            return should_include(os.path.basename(p))
         try:
             for root, dirs, files in os.walk(p):
-                rel = os.path.relpath(root, p)
-                if rel == "." and should_include(os.path.basename(p)):
+                rel_depth = root[len(p) :].count(os.sep)
+                if rel_depth > remaining_depth:
+                    break
+                if should_include(os.path.basename(root)):
                     return True
                 for name in dirs + files:
                     if should_include(name):
@@ -168,7 +180,9 @@ def vfs(path, pr="", f=None, m="ig"):
     for entry in raw_entries:
         full_path = os.path.join(path, entry)
         if os.path.isdir(full_path):
-            if should_include(entry) or dir_has_match(full_path):
+            if should_include(entry) or dir_has_match(
+                full_path, None if depth is None else depth - 1
+            ):
                 entries.append(entry)
         elif should_include(entry):
             entries.append(entry)
@@ -183,6 +197,6 @@ def vfs(path, pr="", f=None, m="ig"):
         name = entry + "/" if is_dir else entry
         print(pr + connector + name)
 
-        if is_dir:
+        if is_dir and (depth is None or depth > 1):
             extension = "    " if is_last else "│   "
-            vfs(full_path, pr + extension, f, m)
+            vfs(full_path, pr + extension, f, m, None if depth is None else depth - 1)
