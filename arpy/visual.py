@@ -187,7 +187,7 @@ def fic(fig, form="png", pi=1):
 ### sd (save_desktop)                    (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
 ### latex (use_latex)                    (int)        是否启用LaTeX渲染，1 表示启用，0 表示禁用，默认值为0
 ### sxt(spacing of the x-axis ticks)     (int)        x轴刻度间距
-### yxt(spacing of the y-axis ticks)     (int)        y轴刻度间距
+### syt(spacing of the y-axis ticks)     (int)        y轴刻度间距
 
 
 def vnm(
