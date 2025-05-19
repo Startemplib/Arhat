@@ -430,11 +430,23 @@ def vsm(
         elif path:  # 仅提供了保存路径时，直接使用 path
             plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
             print(f"图像已保存到指定路径: {path}")
-        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
+
+        elif sd == 1:
             desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-            path = os.path.join(desktop_path, f"Symbol_Matrix-{rows}x{cols}.png")
-            plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
-            print(f"图像已保存到桌面: {path}")
+            base_name = f"Symbol_Matrix-{rows}x{cols}"
+            init = "-0"
+            ext = ".png"
+            path = os.path.join(desktop_path, base_name + init + ext)
+
+            # Check if file exists, append -0, -1, etc. if needed
+            counter = 1
+            while os.path.exists(path):
+                path = os.path.join(desktop_path, f"{base_name}-{counter}{ext}")
+                counter += 1
+
+            plt.savefig(path, bbox_inches="tight")
+            print(f"Image saved to desktop: {path}")
+
         else:
             print("没有提供保存路径，图像未保存。")
     except Exception as e:
@@ -463,29 +475,29 @@ def latexTtxt(latex):
     return sanitized
 
 
-####### 绘图plot(LaTeX + matplotlib) #######
+####### Plot (LaTeX + matplotlib) #######
 
-### x_data                   (ndarray)   x轴数据, 作为绘图输入的数值数组
-### y_data                   (ndarray)   y轴数据, 作为绘图输入的数值数组
-### title                    (str)       图表的标题, 描述图像内容，支持LaTeX
-### xlabel                   (str)       x轴的标签, 描述数据含义，支持LaTeX
-### ylabel                   (str)       y轴的标签, 描述数据含义，支持LaTeX
-### ts (title size)          (int)       图表标题的尺寸
-### xs (xlabel size)         (int)       x轴标签的尺寸
-### ys (ylabel size)         (int)       y轴标签的尺寸
-### z  (zoom factor)         (float)     缩放因子, 用于调整图片的尺寸, 默认值为0.3
-### s  (figure size)         (tuple)     图像的尺寸, 以元组形式表示 (宽, 高), 默认为 (8, 4)
-### dpi (quality)            (int)       图像质量(DPI), 默认值为300, 影响输出图像的分辨率
-### plot_args                (dict)      额外绘图参数, 允许用户自定义 `plt.plot` 参数
-### log_x                    (int)       是否设置 x 轴为对数坐标, 默认值为 False
-### log_y                    (int)       是否设置 y 轴为对数坐标, 默认值为 False
-### plot_type                (str)       绘图类型: "plot" 表示线图, "scatter" 表示散点图
-### show                     (int)       是否弹窗显示图片，默认否
-### ws (window size)         (tuple)     窗口大小，默认值为 (800, 500)
-### wp (window position)     (tuple)     窗口在屏幕上的位置，默认值为 (600, 100)
-### multi                    (int)       是否是多数据模式，默认否。
-### path (save_path)         (str)       可选参数，保存路径，默认值为 None
-### sd (save_desktop)        (int)       是否保存到桌面（1 表示是，0 表示否），默认值为0
+### x_data                   (ndarray)   x-axis data for plotting
+### y_data                   (ndarray)   y-axis data for plotting
+### title                    (str)       Title of the figure, supports LaTeX
+### xlabel                   (str)       Label for the x-axis, supports LaTeX
+### ylabel                   (str)       Label for the y-axis, supports LaTeX
+### ts (title size)          (int)       Font size for the title
+### xs (xlabel size)         (int)       Font size for the x-axis label
+### ys (ylabel size)         (int)       Font size for the y-axis label
+### z  (zoom factor)         (float)     Scale factor for display size, default is 0.3
+### s  (figure size)         (tuple)     Size of the figure (width, height), default is (8, 4)
+### q (quality)              (int)       Image resolution in DPI, default is 300
+### plot_args                (dict)      Additional plotting parameters passed to `plt.plot` or `plt.scatter`
+### log_x                    (int)       Set x-axis to logarithmic scale if True
+### log_y                    (int)       Set y-axis to logarithmic scale if True
+### scatter                  (bool)       Scatter plot mode
+### show                     (bool)       Whether to open the image in a popup window
+### ws (window size)         (tuple)     Viewer window size when using popup, default is (800, 500)
+### wp (window position)     (tuple)     Viewer window position on screen, default is (600, 100)
+### multi                    (int)       Whether plotting multiple datasets, default is False
+### path (save_path)         (str)       Optional path to save the output file
+### sd (save_desktop)        (bool)       If True, saves image to desktop if no path is specified
 
 
 def plot(
@@ -496,7 +508,7 @@ def plot(
     title,
     z=0.3,
     s=(7, 5),
-    dpi=300,
+    q=300,
     ts=16,
     xs=11,
     ys=11,
@@ -504,7 +516,7 @@ def plot(
     plot_args=None,
     log_x=0,
     log_y=0,
-    plot_type="plot",
+    scatter=0,
     show=0,
     ws=(800, 500),
     wp=(600, 100),
@@ -512,73 +524,62 @@ def plot(
     sd=0,
 ):
 
-    # Store the current backend
     original_backend = mpl.get_backend()
 
-    # Switch to 'pgf' backend to render with LaTeX
     mpl.use("pgf")
 
-    # Set up the configuration for LaTeX and fonts
     pgf_with_latex = {
-        "pgf.rcfonts": False,  # Do not use default matplotlib fonts, use the one specified in font.family
-        "text.usetex": True,  # Use LaTeX to write all text
-        "font.family": "serif",  # Use serif fonts
-        "font.serif": ["Times New Roman"],  # Use Times New Roman for English text
+        "pgf.rcfonts": False,
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Times New Roman"],
         "pgf.preamble": r"\usepackage{xeCJK}\setCJKmainfont{KaiTi} \usepackage{amsmath}",
     }
 
     mpl.rcParams.update(pgf_with_latex)
 
-    if not multi:  # 单数据模式
+    if not multi:
 
-        # Create the plot
-        plt.figure(figsize=s)  # Set figure size
-        # Apply plot_args for flexibility
+        plt.figure(figsize=s)
         if plot_args is None:
-            plot_args = {}  # Default to an empty dictionary if no arguments provided
-        # 根据 plot_type 参数选择绘图方法
-        if plot_type == "scatter":
+            plot_args = {}
+        if scatter:
             plt.scatter(x_data, y_data, **plot_args)
-        else:  # 默认为线图
+        else:
             plt.plot(x_data, y_data, **plot_args)
-    else:  # 多数据模式
+    else:
         if not isinstance(x_data, list) or not isinstance(y_data, list):
             raise ValueError(
                 "In multi mode, x_data and y_data must be lists of arrays."
             )
         if plot_args is None:
-            plot_args = [{}] * len(x_data)  # 默认样式参数列表
+            plot_args = [{}] * len(x_data)
         for x, y, args in zip(x_data, y_data, plot_args):
-            if plot_type == "scatter":
+            if scatter:
                 plt.scatter(x, y, **args)
             else:
                 plt.plot(x, y, **args)
 
-    # Set log scale for y-axis if needed
     if log_y == 1:
         plt.yscale("log")
 
     if log_x == 1:
         plt.xscale("log")
 
-    # Set labels and title with specified font sizes
     plt.xlabel(xlabel, fontsize=xs)
     plt.ylabel(ylabel, fontsize=ys)
     plt.title(title, fontsize=ts)
 
     plt.grid(True)
 
-    if multi == 1:  # 多数据模式
-        # 检查每组数据的 plot_args 是否包含 label
+    if multi == 1:
         has_label = any("label" in str(args).lower() for args in plot_args)
-    else:  # 单数据模式
-        # 检查单组数据的 plot_args 是否包含 label
+    else:
         has_label = "label" in str(plot_args).lower()
 
     if has_label:
-        plt.legend()  # 显示图例
+        plt.legend()
 
-    # 禁用科学计数法
     (
         plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
         if not log_y
@@ -592,57 +593,48 @@ def plot(
 
     plt.tight_layout()
 
-    # Create an in-memory binary stream to store the image
     img_buffer = io.BytesIO()
 
-    # Save the figure to this in-memory buffer as a PNG with DPI setting for quality control
-    plt.savefig(
-        img_buffer, format="png", dpi=dpi
-    )  # Set dpi for higher quality (300 DPI is a common high-res setting)
+    plt.savefig(img_buffer, format="png", dpi=q)
 
     plt.close("all")
 
-    # Reset the buffer's position to the start
     img_buffer.seek(0)
 
-    # Read the image to get its original dimensions
     image = Image.open(img_buffer)
     original_width, original_height = image.size
 
-    # Calculate the new dimensions based on the zoom factor
     new_width = int(original_width * z)
     new_height = int(original_height * z)
 
-    # Display the image with the resized dimensions
     display(IPImage(data=img_buffer.getvalue(), width=new_width, height=new_height))
 
     if show == 1:
         vp(image, ws, wp)
 
     try:
-        if path and sd == 1:  # 如果提供了保存路径且 sd == 1，优先使用 path 并提示信息
+        if path and sd == 1:
             with open(path, "wb") as f:
                 f.write(img_buffer.getvalue())
-            print(f"图像已保存到指定路径: {path}，尽管 sd == 1，优先使用了自定义路径。")
-        elif path:  # 仅提供了保存路径时，直接使用 path
+            print(
+                f"Image saved to specified path: {path} (custom path was used even though sd == 1)."
+            )
+        elif path:
             with open(path, "wb") as f:
                 f.write(img_buffer.getvalue())
-            print(f"图像已保存到指定路径: {path}")
-        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
+            print(f"Image saved to specified path: {path}")
+        elif sd == 1:
             desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
             path = os.path.join(desktop_path, f"{latexTtxt(title)}.png")
             with open(path, "wb") as f:
                 f.write(img_buffer.getvalue())
-            print(f"图像已保存到桌面: {path}")
+            print(f"Image saved to desktop: {path}")
         else:
-            print("没有提供保存路径，图像未保存。")
+            print("No save path provided. Image was not saved.")
     except Exception as e:
-        print(f"保存图像时发生错误: {e}")
+        print(f"An error occurred while saving the image: {e}")
 
-    # Close the buffer when done (optional cleanup)
     img_buffer.close()
-
-    # Restore the original backend
     mpl.use(original_backend)
 
 
