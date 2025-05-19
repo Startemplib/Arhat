@@ -31,39 +31,27 @@ from IPython.display import (
 from io import BytesIO  # For handling byte streams
 import ctypes  # For calling C functions and other low-level operations
 
-####### 字体设置(font settings) #######
+####### font setting #######
 
 plt.rcParams["font.family"] = [
     "Times New Roman",
     "SimSun",
-]  # 'SimHei' 是黑体, 'SimSun' 是宋体
+]
+
+####### View Photo (vp) #######
+
+### Left mouse click or Enter key to exit image view
+### Image pan auto-follows mouse position
+### Mouse wheel to zoom in/out
+
+### images                 (str or fig or list)     Image file path, or loaded image object, or a list of them
+### ws (window_size)       (tuple)                  Window size, default is (3000, 2300)
+### wp (window_position)   (tuple)                  Window position on screen, default is (600, 100)
+### auto                   (bool)                   Enable auto window sizing/positioning, default is False
 
 
-####### 桌面地址抓取(desktop address capture) #######
+def vp(images, auto=1, ws=(3000, 2300), wp=(600, 100)):
 
-
-def get_desktop_path():
-    """获取当前用户桌面的路径"""
-    return os.path.join(os.path.expanduser("~"), "Desktop")
-
-
-####### 图片观察(view photo) #######
-
-### 鼠标左键与enter键退出图片观察
-### 图片方位自动随鼠标位置移动
-### 滑轮滑动缩放
-
-### images                 (str or fig or list)     图片地址or图片文件夹地址or图片变量or图片地址组成的list变量or图片变量所组成的list变量
-### ws (window_size)       (tuple)          窗口大小，默认值为 (3000, 2300)
-### wp (window_position)   (tuple)          窗口在屏幕上的位置，默认值为 (600, 100)
-
-
-def vp(images, ws=(3000, 2300), wp=(600, 100)):
-    # 全局变量
-    window_name = "Image Viewer"
-    constant_ws = ws  # 窗口大小可由参数输入
-
-    # 定义鼠标事件回调函数
     def mouse_callback(event, x, y, flags, param):
         param["mouse_x"], param["mouse_y"] = x, y
         if event == cv2.EVENT_MOUSEWHEEL:
@@ -74,7 +62,6 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
         elif event == cv2.EVENT_LBUTTONDOWN:
             param["mouse_left_click"] = True
 
-    # 调整图像以保持鼠标为中心的缩放
     def adjust_to_mouse_center(img_cv, zoom_factor, mouse_x, mouse_y):
         h, w, _ = img_cv.shape
         relative_mouse_x = mouse_x / constant_ws[0]
@@ -97,10 +84,9 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
 
         return background
 
-    # 显示图像的函数
     def display_image(img_cv, param):
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-        cv2.moveWindow(window_name, *wp)  # 使用传入的窗口位置
+        cv2.moveWindow(window_name, *wp)
         cv2.resizeWindow(window_name, *constant_ws)
 
         while True:
@@ -108,6 +94,10 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
                 img_cv, param["zoom_factor"], param["mouse_x"], param["mouse_y"]
             )
             cv2.imshow(window_name, adjusted_img)
+
+            hwnd = ctypes.windll.user32.FindWindowW(None, window_name)
+            if hwnd:
+                ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002)
 
             h, w, _ = adjusted_img.shape
             cv2.resizeWindow(window_name, w, h)
@@ -120,45 +110,58 @@ def vp(images, ws=(3000, 2300), wp=(600, 100)):
 
         cv2.destroyAllWindows()
 
-    # 初始化鼠标和缩放相关参数
     param = {"zoom_factor": 1, "mouse_x": 0, "mouse_y": 0, "mouse_left_click": False}
 
     if isinstance(images, str) or not isinstance(images, list):
-        images = [images]  # 如果是单个路径或图像，转换为单元素列表
+        images = [images]
 
-    # 主逻辑
     for image in images:
-        if isinstance(image, str):  # 如果输入是文件路径
+        if isinstance(image, str):
             img_cv = cv2.imread(image, cv2.IMREAD_UNCHANGED)
             if img_cv is None:
                 print(f"加载图像错误: {image}")
                 continue
-        else:  # 如果输入是已经加载的图像
+        else:
             img_cv = image
 
-        if isinstance(img_cv, Image.Image):  # 如果是 Pillow 图像
+        if isinstance(img_cv, Image.Image):
             img_cv = np.array(img_cv)
             img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
-        if img_cv.shape[2] == 4:  # 如果是 RGBA 格式
-            img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)  # 转换为 RGB 格式
+        if img_cv.shape[2] == 4:
+            img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
 
         img_height, img_width = img_cv.shape[:2]
+
+        if auto:
+            user32 = ctypes.windll.user32
+            screen_w = user32.GetSystemMetrics(0)
+            screen_h = user32.GetSystemMetrics(1)
+            scale_factor = 0.6
+            ws = (
+                min(int(img_width * 1.05), int(screen_w * scale_factor)),
+                min(int(img_height * 1.05), int(screen_h * scale_factor)),
+            )
+            wp = ((screen_w - ws[0]) // 2, (screen_h - ws[1]) // 2)
+
+        window_name = "Image Viewer"
+        constant_ws = ws
+
         zoom_factor = min(ws[0] / img_width, ws[1] / img_height)
 
         param["zoom_factor"] = zoom_factor
 
-        param["mouse_left_click"] = False  # 每次展示图片时重置点击状态
+        param["mouse_left_click"] = False
         display_image(img_cv, param)
 
 
-####### 图片格式转换(figure image convertor) #######
+####### Figure Image Convertor (fic) #######
 
-### fig                   (Figure)     Matplotlib 的 figure 对象
-### pi (pad_inches)       (float)      图像四周的内边距，单位为英寸，默认值为1
-### form (format)         (string)     转换结果类型指定
+### fig                   (Figure)     Matplotlib figure object
+### pi (pad_inches)       (float)      Padding around the image in inches, default is 1
+### form (format)         (string)     Output image format (e.g., "png")
 
 ### return:
-### img_cv                (ndarray)    OpenCV 格式的图像数组
+### img_cv                (ndarray)    Image array in OpenCV format
 
 
 def fic(fig, form="png", pi=1):
@@ -168,26 +171,26 @@ def fic(fig, form="png", pi=1):
     img_array = np.frombuffer(buf.getvalue(), dtype=np.uint8)
     img_cv = cv2.imdecode(img_array, 1)
     buf.close()
-    return img_cv  # 返回 OpenCV 格式的图像
+    return img_cv
 
 
-####### 可视化数值矩阵(view numerical matrix) #######
+####### Visualize Numerical Matrix (vnm) #######
 
-### matrix                               (ndarray)    待展示的矩阵数据，n行m列的二维数组
-### cs (cell_size)                       (int)        每个格子的尺寸系数，默认值为1
-### f (font_size)                        (int)        字体尺寸系数，默认值为1
-### t (title_size)                       (int)        标题尺寸系数，默认值为1
-### k (tick_size)                        (int)        坐标刻度字体大小系数，默认值为1
-### cbs (font_size of color bar)          int)        彩色颜色条刻度字体大小系数，默认值为1
-### title                                (str)        矩阵的标题，默认值为 "Numerical-Matrix"
-### q (quality)                          (int)        图像质量(DPI)，默认值为300
-### p (title_pad)                        (int)        标题与矩阵之间的间隔
-### cmap (colormap)                      (str)        颜色映射表，默认值为 "viridis"
-### path (save_path)                     (str)        可选参数，保存路径，默认值为 None
-### sd (save_desktop)                    (int)        是否保存到桌面（1 表示是，0 表示否），默认值为0
-### latex (use_latex)                    (int)        是否启用LaTeX渲染，1 表示启用，0 表示禁用，默认值为0
-### sxt(spacing of the x-axis ticks)     (int)        x轴刻度间距
-### syt(spacing of the y-axis ticks)     (int)        y轴刻度间距
+### matrix                               (ndarray)    The matrix to be visualized (2D array, shape: n x m)
+### cs (cell_size)                       (int)        Cell size scaling factor, default is 1
+### f (font_size)                        (int)        Font size scaling factor, default is 1
+### t (title_size)                       (int)        Title size scaling factor, default is 1
+### k (tick_size)                        (int)        Axis tick font size scaling factor, default is 1
+### cbs (color bar font size)            (int)        Color bar tick label size scaling factor, default is 1
+### title                                (str)        Matrix title, default is "Numerical-Matrix"
+### q (quality)                          (int)        Image DPI (quality), default is 300
+### p (title_pad)                        (int)        Padding between title and matrix
+### cmap (colormap)                      (str)        Colormap to use, default is "viridis"
+### path (save_path)                     (str)        Optional save path, default is None
+### sd (save_desktop)                    (bool)        Whether to save to desktop
+### latex (use_latex)                    (bool)        Whether to use LaTeX rendering
+### sxt (spacing of x-axis ticks)        (int)        Tick spacing on the x-axis, default is 1
+### syt (spacing of y-axis ticks)        (int)        Tick spacing on the y-axis, default is 1
 
 
 def vnm(
@@ -200,9 +203,9 @@ def vnm(
     q=300,
     p=0,
     cmap="viridis",
-    path=None,  # 用户可以指定保存路径
-    sd=0,  # 增加是否保存到桌面的选项，默认为0不保存
-    latex=0,  # 新增参数，控制是否使用LaTeX渲染
+    path=None,
+    sd=0,
+    latex=0,
     sxt=1,
     syt=1,
     cbs=1,
@@ -210,12 +213,10 @@ def vnm(
 
     rows, cols = matrix.shape
 
-    # 每个格子的基准尺寸
     fig_width = cols * cs * 0.1
     fig_height = rows * cs * 0.1
     title_fontsize = max(rows, cols) * 0.3 * t
 
-    # 如果 latex 为 1，则启用 LaTeX 渲染
     if latex == 1:
         plt.rcParams["text.usetex"] = True
     else:
@@ -223,85 +224,82 @@ def vnm(
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=q)
 
-    abs_matrix = np.abs(matrix)  # Get the magnitude of the complex matrix
-    cax = ax.imshow(abs_matrix, cmap=cmap, interpolation="nearest")
+    cax = ax.imshow(matrix, cmap=cmap, interpolation="nearest")
 
-    # 自动调整字体大小
-    font_size = cs * f * 19  # 动态调整字体大小
+    font_size = cs * f * 19
+
     for i in range(rows):
         for j in range(cols):
-            real_part = matrix[i, j].real
-            imag_part = matrix[i, j].imag
-            if real_part == 0 and imag_part == 0:
-                ax.text(
-                    j,
-                    i,
-                    "0",
-                    ha="center",
-                    va="center",
-                    color="white",
-                    fontsize=font_size,
-                )
-            else:
-                if imag_part >= 0:
-                    ax.text(
-                        j,
-                        i,
-                        f"{real_part:.2f}+{imag_part:.2f}i",
-                        ha="center",
-                        va="center",
-                        color="black",
-                        fontsize=font_size,
-                    )
-                else:
-                    ax.text(
-                        j,
-                        i,
-                        f"{real_part:.2f}{imag_part:.2f}i",  # Handle negative imaginary part
-                        ha="center",
-                        va="center",
-                        color="black",
-                        fontsize=font_size,
-                    )
+            value = matrix[i, j]
 
+            if np.iscomplexobj(matrix):
+                real_part = value.real
+                imag_part = value.imag
+
+                if real_part == 0 and imag_part == 0:
+                    display = "0"
+                elif imag_part == 0:
+                    display = f"{real_part:.2f}"
+                elif real_part == 0:
+                    display = f"{imag_part:.2f}i"
+                elif imag_part > 0:
+                    display = f"{real_part:.2f}+{imag_part:.2f}i"
+                else:
+                    display = f"{real_part:.2f}{imag_part:.2f}i"
+            else:
+                display = f"{value:.2f}" if value != 0 else "0"
+
+            ax.text(
+                j,
+                i,
+                display,
+                ha="center",
+                va="center",
+                color="black" if display != "0" else "white",
+                fontsize=font_size,
+            )
     tick_fontsize = font_size * 6 * k
-    ax.set_xticks(
-        np.arange(0, cols, step=sxt)
-    )  # Control the tick positions on the x-axis
-    ax.set_yticks(
-        np.arange(0, rows, step=syt)
-    )  # Control the tick positions on the y-axis
+    ax.set_xticks(np.arange(0, cols, step=sxt))
+    ax.set_yticks(np.arange(0, rows, step=syt))
     ax.tick_params(axis="both", which="major", labelsize=tick_fontsize)
 
-    # 添加颜色条，并设置颜色条的刻度格式
     cbar = fig.colorbar(cax)
     cbar.ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:.2f}"))
     cbar.ax.tick_params(labelsize=cbs * tick_fontsize)
 
-    # 设置标题，可以使用 LaTeX 格式
     ax.set_title(title, fontdict={"fontsize": title_fontsize}, pad=p)
 
-    img_cv = fic(fig)  # 将 figure 转换为 OpenCV 格式的图像
-    vp([img_cv])  # 使用 vp 函数显示图像
+    img_cv = fic(fig)
+    vp([img_cv])
 
     try:
-        if path and sd == 1:  # 如果提供了保存路径且 sd == 1，优先使用 path 并提示信息
+        if path and sd == 1:
             plt.savefig(path, bbox_inches="tight")
-            print(f"图像已保存到指定路径: {path}，尽管 sd == 1，优先使用了自定义路径。")
-        elif path:  # 仅提供了保存路径时，直接使用 path
+            print(f"Image saved to specified path: {path} (desktop flag overridden)")
+        elif path:
             plt.savefig(path, bbox_inches="tight")
-            print(f"图像已保存到指定路径: {path}")
-        elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
-            desktop_path = get_desktop_path()
-            path = os.path.join(desktop_path, f"Matrix-{rows}x{cols}.png")
-            plt.savefig(path, bbox_inches="tight")
-            print(f"图像已保存到桌面: {path}")
-        else:
-            print("没有提供保存路径，图像未保存。")
-    except Exception as e:
-        print(f"保存图像时发生错误: {e}")
+            print(f"Image saved to specified path: {path}")
+        elif sd == 1:
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+            base_name = f"Matrix-{rows}x{cols}"
+            init = "-0"
+            ext = ".png"
+            path = os.path.join(desktop_path, base_name + init + ext)
 
-    plt.close(fig)  # 关闭图像，避免占用内存
+            # Check if file exists, append -0, -1, etc. if needed
+            counter = 1
+            while os.path.exists(path):
+                path = os.path.join(desktop_path, f"{base_name}-{counter}{ext}")
+                counter += 1
+
+            plt.savefig(path, bbox_inches="tight")
+            print(f"Image saved to desktop: {path}")
+        else:
+            print("No save path provided. Image was not saved.")
+    except Exception as e:
+        print(f"An error occurred while saving the image: {e}")
+
+    plt.close(fig)
 
 
 ####### 可视化符号矩阵(view Symbolic matrix) #######
@@ -433,7 +431,7 @@ def vsm(
             plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
             print(f"图像已保存到指定路径: {path}")
         elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
-            desktop_path = get_desktop_path()
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
             path = os.path.join(desktop_path, f"Symbol_Matrix-{rows}x{cols}.png")
             plt.savefig(path, bbox_inches="tight", pad_inches=0.1)
             print(f"图像已保存到桌面: {path}")
@@ -631,7 +629,7 @@ def plot(
                 f.write(img_buffer.getvalue())
             print(f"图像已保存到指定路径: {path}")
         elif sd == 1:  # 如果未提供 path 且 sd == 1，则保存到桌面
-            desktop_path = get_desktop_path()
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
             path = os.path.join(desktop_path, f"{latexTtxt(title)}.png")
             with open(path, "wb") as f:
                 f.write(img_buffer.getvalue())
@@ -648,7 +646,7 @@ def plot(
     mpl.use(original_backend)
 
 
-####### 号角Horn #######
+####### Horn #######
 
 ### text                       (str)
 ### dpi                        (int)
