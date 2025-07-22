@@ -30,6 +30,7 @@ from IPython.display import (
 # Additional Libraries
 from io import BytesIO  # For handling byte streams
 import ctypes  # For calling C functions and other low-level operations
+import qrcode
 
 ####### font setting #######
 
@@ -710,3 +711,19 @@ def Horn(text, fz=12, dpi=1000, w=800, h=300, t=1370):
 
     # Clean up Matplotlib resources
     plt.close()
+
+
+####### tqr #######
+
+### data                       (str)   The input string or URL to encode as a QR code
+
+
+def tqr(data: str):
+    # Generate QR code
+    img_qr = qrcode.make(data)
+
+    # Convert PIL image to OpenCV BGR image
+    img_cv = cv2.cvtColor(np.array(img_qr.convert("RGB")), cv2.COLOR_RGB2BGR)
+
+    # Display the image
+    vp(img_cv)
