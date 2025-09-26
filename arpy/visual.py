@@ -1,4 +1,10 @@
-################################################### 可视化函数库 ###################################################
+################################################### Visual ###################################################
+
+import subprocess
+from pathlib import Path
+import re
+import shutil
+import tempfile
 
 # General Libraries
 import os  # For operating system interactions
@@ -713,9 +719,9 @@ def Horn(text, fz=12, dpi=1000, w=800, h=300, t=1370):
     plt.close()
 
 
-####### tqr #######
+####### To Quick Response Code (tqr) #######
 
-### data                       (str)   The input string or URL to encode as a QR code
+### data               (str)                  The input string or URL to encode as a QR code
 
 
 def tqr(data: str):
@@ -729,7 +735,7 @@ def tqr(data: str):
     vp(img_cv)
 
 
-####### pdf_rs(Portal_document_Format Resampleing) #######
+####### Portal_document_Format Resampleing (pdf_rs) #######
 
 ##### Dependency
 
@@ -760,13 +766,6 @@ def tqr(data: str):
 ### qpdf_path          (str | Path)           Path to `qpdf` executable.
 ### gs_path            (str | Path)           Path to Ghostscript CLI (e.g., `gswin64c.exe` on Windows).
 ### Returns            (list[Path])           Output PDF paths, same order as `pdf_paths`.
-
-
-import subprocess
-from pathlib import Path
-import re
-import shutil
-import tempfile
 
 
 def pdf_rs(
