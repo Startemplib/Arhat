@@ -1,5 +1,3 @@
-################################################### 矩阵生成函数库 ###################################################
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -11,7 +9,7 @@ import re
 import sympy as sp
 
 
-####### 生成三对角矩阵(generate a tridiagonal matrix) #######
+####### generate a tridiagonal matrix #######
 
 ### upper                 (list)       上对角线元素列表，长度为 n-1
 ### diagonal              (list)       主对角线元素列表，长度为 n
