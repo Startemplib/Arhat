@@ -490,21 +490,22 @@ def latexTtxt(latex):
 ### xlabel                   (str)       Label for the x-axis, supports LaTeX
 ### ylabel                   (str)       Label for the y-axis, supports LaTeX
 ### ts (title size)          (int)       Font size for the title
+### tp (title pad)           (float)     Vertical distance between title and plot (pt)
 ### xs (xlabel size)         (int)       Font size for the x-axis label
 ### ys (ylabel size)         (int)       Font size for the y-axis label
 ### z  (zoom factor)         (float)     Scale factor for display size, default is 0.3
-### s  (figure size)         (tuple)     Size of the figure (width, height), default is (8, 4)
-### q (quality)              (int)       Image resolution in DPI, default is 300
-### plot_args                (dict)      Additional plotting parameters passed to `plt.plot` or `plt.scatter`
-### log_x                    (int)       Set x-axis to logarithmic scale if True
-### log_y                    (int)       Set y-axis to logarithmic scale if True
-### scatter                  (bool)       Scatter plot mode
-### show                     (bool)       Whether to open the image in a popup window
+### s  (figure size)         (tuple)     Size of the figure (width, height), default is (7, 5)
+### q  (quality)             (int)       Image resolution in DPI, default is 300
+### plot_args                (dict/list) Additional plotting parameters passed to `plt.plot` or `plt.scatter`
+### log_x                    (int/bool)  Set x-axis to logarithmic scale if True
+### log_y                    (int/bool)  Set y-axis to logarithmic scale if True
+### scatter                  (bool)      Scatter plot mode
+### multi                    (bool/int)  Whether plotting multiple datasets, default is False
+### show                     (bool)      Whether to open the image in a popup window
 ### ws (window size)         (tuple)     Viewer window size when using popup, default is (800, 500)
 ### wp (window position)     (tuple)     Viewer window position on screen, default is (600, 100)
-### multi                    (int)       Whether plotting multiple datasets, default is False
 ### path (save_path)         (str)       Optional path to save the output file
-### sd (save_desktop)        (bool)       If True, saves image to desktop if no path is specified
+### sd (save_desktop)        (bool)      If True, saves image to desktop if no path is specified
 
 
 def plot(
@@ -517,6 +518,7 @@ def plot(
     s=(7, 5),
     q=300,
     ts=16,
+    tp=10,
     xs=11,
     ys=11,
     multi=0,
@@ -575,7 +577,7 @@ def plot(
 
     plt.xlabel(xlabel, fontsize=xs)
     plt.ylabel(ylabel, fontsize=ys)
-    plt.title(title, fontsize=ts)
+    plt.title(title, fontsize=ts, pad=tp)
 
     plt.grid(True)
 
